@@ -6,7 +6,16 @@ The packages generated with this **conanfile** can be found in [conan.io](https:
 
 ## Build packages
 
+Download conan client from [Conan.io](https://conan.io) and run:
+
     $ python build.py
+    
+May be necessary to edit ~/.conan/conan.conf to set your *compiler* and *compiler.version* setting:
+
+    [settings_defaults]
+    ...
+    compiler=gcc # clang, Visual Studio
+    compiler.version=4.9 
     
 ## Upload packages to server
 
