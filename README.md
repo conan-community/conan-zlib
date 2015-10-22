@@ -1,8 +1,8 @@
 # conan-zlib
 
-[https://conan.io](Conan.io) package for ZLIB library
+(https://conan.io)[Conan.io] package for ZLIB library
 
-The packages generated with this **conanfile** can be found in [https://conan.io/source/zlib/1.2.8/lasote/stable](conan.io).
+The packages generated with this **conanfile** can be found in (https://conan.io/source/zlib/1.2.8/lasote/stable)[conan.io].
 
 ## Build packages
 
