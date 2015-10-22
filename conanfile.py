@@ -51,8 +51,8 @@ class ZlibConan(ConanFile):
             cd_build = "cd _build"
             self.output.warn('%s && cmake .. %s' % (cd_build, cmake.command_line))
             self.run('%s && cmake .. %s' % (cd_build, cmake.command_line))
-            self.output.warn("%s && cmake --build . %s" % (cd_build, self.settings.build_config))
-            self.run("%s && cmake --build . %s" % (cd_build, self.settings.build_config))
+            self.output.warn("%s && cmake --build . %s" % (cd_build, cmake.build_config))
+            self.run("%s && cmake --build . %s" % (cd_build, cmake.build_config))
 
     def package(self):
         """ Define your conan structure: headers, libs, bins and data. After building your
