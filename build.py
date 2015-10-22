@@ -13,7 +13,7 @@ def system(command):
 def build_run_example(settings):
     current_dir = os.getcwd()
     sha = hashlib.sha1(settings).hexdigest()
-    build_folder = os.path.join(current_dir, "build", sha)
+    build_folder = os.path.join(current_dir, "conan_tmp", sha)
     shutil.copytree("test", build_folder)
     try:
         os.chdir(build_folder)
@@ -27,7 +27,7 @@ def build_run_example(settings):
 if __name__ == "__main__":
     system('conan export lasote/stable')
 
-    shutil.rmtree("build", ignore_errors=True)
+    shutil.rmtree("conan_tmp", ignore_errors=True)
     if platform.system() == "Windows":
         compiler = '-s compiler="Visual Studio" -s compiler.version=12 '
         # Static x86
