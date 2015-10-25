@@ -14,6 +14,7 @@ class ZlibConan(ConanFile):
     options = {"shared": [True, False]}
     default_options = "shared=False"
     exports = "CMakeLists.txt"
+    url="http://github.com/lasote/conan-zlib"
 
     def conan_info(self):
         # We don't want to change the package for each compiler version but
