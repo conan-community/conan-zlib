@@ -1,0 +1,9 @@
+language: cpp
+compiler:
+- gcc
+install:
+- wget CONAN_URL -P conan.deb
+- sudo dpkg -i conan.deb
+- rm conan.deb
+script:
+- python build.py
