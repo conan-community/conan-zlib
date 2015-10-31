@@ -2,6 +2,8 @@ language: cpp
 compiler:
 - gcc
 install:
+- sudo apt-get update -qq
+- sudo apt-get install gcc-multilib
 - wget $CONAN_URL -O conan.deb
 - sudo dpkg -i conan.deb
 - rm conan.deb
