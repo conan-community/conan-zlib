@@ -5,5 +5,8 @@ install:
 - wget $CONAN_URL -O conan.deb
 - sudo dpkg -i conan.deb
 - rm conan.deb
+- conan --help # Generates conf
+- echo "\ncompiler=gcc" >> ~/.conan/conan.conf
+- echo "\ncompiler.version=$(gcc -dumpversion)" >> ~/.conan/conan.conf
 script:
 - python build.py
