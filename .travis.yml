@@ -10,5 +10,10 @@ install:
 - echo -e "\ncompiler.version=$(gcc -dumpversion)" >> ~/.conan/conan.conf
 - conan install . || echo "Ignore fail, just generates default settings"
 - sed -i -- 's/\[\"4.8\"/\[\"4.6\", \"4.7\", \"4.8\"/g' ~/.conan/settings.yml 
+- wget https://s3.amazonaws.com/biibinaries/thirdparty/cmake-3.0.2-Linux-64.tar.gz
+- tar -xzf cmake-3.0.2-Linux-64.tar.gz
+- sudo cp -fR cmake-3.0.2-Linux-64/* /usr
+- rm -rf cmake-3.0.2-Linux-64
+- rm cmake-3.0.2-Linux-64.tar.gz
 script:
 - python build.py
