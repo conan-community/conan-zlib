@@ -11,7 +11,8 @@ install:
 - echo -e "\ncompiler=gcc" >> ~/.conan/conan.conf
 - echo -e "\ncompiler.version=$(gcc -dumpversion)" >> ~/.conan/conan.conf
 - conan install . || echo "Ignore fail, just generates default settings"
-- sed -i -- 's/\[\"4.8\"/\[\"4.6\", \"4.7\", \"4.8\"/g' ~/.conan/settings.yml 
+- sed -i -- 's/\[\"4.8\"/\[\"4.6\", \"4.7\", \"4.8\"/g' ~/.conan/settings.yml  # Add 4.6
+- sed -i -- 's/conan.io/#conan.io/g'  ~/.conan/conan.conf # Disable remote, force build
 - wget https://s3.amazonaws.com/biibinaries/thirdparty/cmake-3.0.2-Linux-64.tar.gz
 - tar -xzf cmake-3.0.2-Linux-64.tar.gz
 - sudo cp -fR cmake-3.0.2-Linux-64/* /usr
