@@ -8,6 +8,7 @@ install:
 - conan --help # Generates conf
 - echo -e "\ncompiler=gcc" >> ~/.conan/conan.conf
 - echo -e "\ncompiler.version=$(gcc -dumpversion)" >> ~/.conan/conan.conf
+- conan install . || echo "Ignore fail, just generates default settings"
 - sed -i -- 's/\[\"4.8\"/\[\"4.6\", \"4.7\", \"4.8\"/g' ~/.conan/settings.yml 
 script:
 - python build.py
