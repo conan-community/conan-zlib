@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/lasote/conan-zlib.svg)](https://travis-ci.org/lasote/conan-zlib)
+
+
 # conan-zlib
 
 [Conan.io](https://conan.io) package for ZLIB library

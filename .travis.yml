@@ -5,6 +5,12 @@ install:
 # Install gcc-multilib (fixed some errors)
 - sudo apt-get update -qq
 - sudo apt-get install gcc-multilib
+# Install CMake 3
+- wget https://s3.amazonaws.com/biibinaries/thirdparty/cmake-3.0.2-Linux-64.tar.gz
+- tar -xzf cmake-3.0.2-Linux-64.tar.gz
+- sudo cp -fR cmake-3.0.2-Linux-64/* /usr
+- rm -rf cmake-3.0.2-Linux-64
+- rm cmake-3.0.2-Linux-64.tar.gz
 # Download conan
 - wget $CONAN_URL -O conan.deb
 - sudo dpkg -i conan.deb
@@ -16,11 +22,6 @@ install:
 - conan install . || echo "Ignore fail, just generates default settings"
 - sed -i -- 's/\[\"4.8\"/\[\"4.6\", \"4.7\", \"4.8\"/g' ~/.conan/settings.yml  # Add 4.6
 - sed -i -- 's/conan.io/#conan.io/g'  ~/.conan/conan.conf # Disable remote, force build
-# Install CMake 3
-- wget https://s3.amazonaws.com/biibinaries/thirdparty/cmake-3.0.2-Linux-64.tar.gz
-- tar -xzf cmake-3.0.2-Linux-64.tar.gz
-- sudo cp -fR cmake-3.0.2-Linux-64/* /usr
-- rm -rf cmake-3.0.2-Linux-64
-- rm cmake-3.0.2-Linux-64.tar.gz
+
 script:
 - python build.py
