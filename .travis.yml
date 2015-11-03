@@ -21,4 +21,4 @@ install:
 - echo -e "\ncompiler.version=$(gcc -dumpversion)" >> ~/.conan/conan.conf
 
 script:
-- python build.py zlib
+- python build.py -x zlib
