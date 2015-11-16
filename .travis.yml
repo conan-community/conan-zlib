@@ -21,5 +21,5 @@ install:
 
 
 script:
-- rm ~/.conan/conan.conf # Forces again the detection of compiler
+- rm ~/.conan/conan.conf  # Forces again the detection of compiler
 - python build.py
