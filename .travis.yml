@@ -1,16 +1,17 @@
 language: cpp
 compiler:
 - gcc
+- clang
 install:
 # Install gcc-multilib (fixed some errors)
 - sudo apt-get update -qq
 - sudo apt-get install gcc-multilib
-# Install CMake 3
-- wget https://s3.amazonaws.com/biibinaries/thirdparty/cmake-3.0.2-Linux-64.tar.gz
-- tar -xzf cmake-3.0.2-Linux-64.tar.gz
-- sudo cp -fR cmake-3.0.2-Linux-64/* /usr
-- rm -rf cmake-3.0.2-Linux-64
-- rm cmake-3.0.2-Linux-64.tar.gz
+# # Install CMake 3
+# - wget https://s3.amazonaws.com/biibinaries/thirdparty/cmake-3.0.2-Linux-64.tar.gz
+# - tar -xzf cmake-3.0.2-Linux-64.tar.gz
+# - sudo cp -fR cmake-3.0.2-Linux-64/* /usr
+# - rm -rf cmake-3.0.2-Linux-64
+# - rm cmake-3.0.2-Linux-64.tar.gz
 # Download conan
 - wget $CONAN_URL -O conan.deb
 - sudo dpkg -i conan.deb
