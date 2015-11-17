@@ -1,7 +1,6 @@
 from conans import ConanFile
 import os
-from conans.tools import download
-from conans.tools import unzip
+from conans.tools import download, unzip, replace_in_file
 from conans import CMake
 
 
@@ -96,11 +95,3 @@ class ZlibConan(ConanFile):
                     self.cpp_info.libs = ['zlibstatic']
         else:
             self.cpp_info.libs = ['z']
-
-
-def replace_in_file(file_path, search, replace):
-    with open(file_path, 'r') as content_file:
-        content = content_file.read()
-        content = content.replace(search, replace)
-    with open(file_path, 'wb') as handle:
-        handle.write(content)
