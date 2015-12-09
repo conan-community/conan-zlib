@@ -12,7 +12,7 @@ class ZlibConan(ConanFile):
     settings = "os", "arch", "compiler", "build_type"
     options = {"shared": [True, False]}
     default_options = "shared=False"
-    exports = "CMakeLists.txt"
+    exports = ["CMakeLists.txt", "FindZLIB.cmake"]
     url="http://github.com/lasote/conan-zlib"
 
     def conan_info(self):
@@ -58,6 +58,9 @@ class ZlibConan(ConanFile):
         """ Define your conan structure: headers, libs, bins and data. After building your
             project, this method is called to create a defined structure:
         """
+        # Copy findZLIB.cmake to package
+        self.copy("FindZLIB.cmake", ".", ".")
+        
         # Copying zlib.h, zutil.h, zconf.h
         self.copy("*.h", "include", "%s" % (self.ZIP_FOLDER_NAME), keep_path=False)
         self.copy("*.h", "include", "%s" % ("_build"), keep_path=False)
@@ -82,6 +85,7 @@ class ZlibConan(ConanFile):
                 self.copy(pattern="*.a", dst="lib", src=self.ZIP_FOLDER_NAME, keep_path=False)
 
     def package_info(self):
+        
         if self.settings.os == "Windows":
             if self.options.shared:
                 if self.settings.build_type == "Debug":
