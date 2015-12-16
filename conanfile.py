@@ -18,7 +18,8 @@ class ZlibConan(ConanFile):
     def conan_info(self):
         # We don't want to change the package for each compiler version but
         # we need the setting to compile with cmake
-        self.info.settings.compiler.version = "any"
+        if self.settings.os == "Macos":
+            self.info.settings.compiler.version = "any"
 
     def source(self):
         zip_name = "zlib-1.2.8.zip"
