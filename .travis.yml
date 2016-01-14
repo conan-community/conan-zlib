@@ -1,7 +1,5 @@
 language: cpp
-compiler:
-- gcc
-- clang
+sudo: required
 services:
   - docker
 install:
