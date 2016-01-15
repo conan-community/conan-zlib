@@ -36,4 +36,4 @@ if __name__ == "__main__":
       
     if conan_upload and conan_password:  
         os.system("conan user %s -p %s" % (conan_username, conan_password))
-        os.system("conan upload %s --all" % reference)
+        os.system("conan upload %s/%s/%s --all" % (reference, conan_username, conan_channel)
