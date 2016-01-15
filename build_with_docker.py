@@ -11,6 +11,7 @@ if __name__ == "__main__":
         
     for gcc_version in versions:
         image_name = "lasote/conangcc%s" % gcc_version.replace(".", "")
+        os.system("sudo mkdir ~/.conan/data && sudo chmod -R 755 ~/.conan/data")
         os.system("sudo docker pull %s" % image_name)
         curdir = os.path.abspath(os.path.curdir)
         command = 'sudo docker run --rm  -v %s:/home/conan/project -v '\
