@@ -2,8 +2,10 @@ import os
 import platform
 import sys
 
+############### CONFIGURE THESE VALUES ##################
 default_user = "lasote"
 default_channel = "testing"
+#########################################################
 
 if __name__ == "__main__":
     channel = os.getenv("CONAN_CHANNEL", default_channel)

@@ -5,13 +5,13 @@ import sys
 ############### CONFIGURE THESE VALUES ##################
 default_username = "lasote"
 default_channel = "testing"
-reference = "zlib/1.2.8"
 #########################################################
 
 conan_username = os.getenv("CONAN_USERNAME", default_username)
 conan_channel = os.getenv("CONAN_CHANNEL", default_channel if not os.getenv("TRAVIS", False) else "travis")
 conan_password = os.getenv("CONAN_PASSWORD", None)
 conan_upload = os.getenv("CONAN_UPLOAD", False)
+conan_reference = os.getenv("CONAN_REFERENCE", False) 
 
 if __name__ == "__main__":
 
@@ -31,9 +31,13 @@ if __name__ == "__main__":
         env_vars = '-e CONAN_USERNAME=%s -e CONAN_CHANNEL=%s' % (conan_username, conan_channel) 
         command = 'sudo docker run --rm -v %s:/home/conan/project -v '\
                   '~/.conan/data:/home/conan/.conan/data -it %s %s /bin/sh -c '\
-                  '"cd project && sudo pip install conan --upgrade && python build.py"' % (curdir, env_vars, image_name)
-        os.system(command)
+                  '"cd project && sudo pip install conan==0.0.1rc3 --upgrade && python build.py"' % (curdir, env_vars, image_name)
+        ret = os.system(command)
+        if ret != 0:
+            exit("Error building")
       
     if conan_upload and conan_password:  
         os.system("conan user %s -p %s" % (conan_username, conan_password))
-        os.system("conan upload %s/%s/%s --all" % (reference, conan_username, conan_channel))
+        ret = os.system("conan upload %s/%s/%s --all --force" % (conan_reference, conan_username, conan_channel))
+        if ret != 0:
+            exit("Error uploading")
