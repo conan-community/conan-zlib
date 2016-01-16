@@ -12,7 +12,7 @@ install:
   - mkdir -p ~/.conan/data
 script:
   - export CONAN_UPLOAD=1 && 
-           CONAN_REFERENCE="Boost/1.60.0" && 
+           CONAN_REFERENCE="zlib/1.2.8" && 
            CONAN_USERNAME="lasote" && 
            CONAN_CHANNEL="travis" && 
            python build_with_docker.py $GCC_VERSION
