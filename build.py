@@ -43,6 +43,8 @@ if __name__ == "__main__":
     password = os.getenv("CONAN_PASSWORD")
     travis = os.getenv("TRAVIS", False)
     travis_branch = os.getenv("TRAVIS_BRANCH", None)
+    appveyor = os.getenv("APPVEYOR", False)
+    appveyor_branch = os.getenv("APPVEYOR_REPO_BRANCH", None)
     
     if travis:
         if travis_branch=="master":
@@ -51,6 +53,12 @@ if __name__ == "__main__":
             channel = channel
         os.environ["CONAN_CHANNEL"] = channel
         
+    if appveyor:
+        if appveyor_branch=="master" and not os.getenv("APPVEYOR_PULL_REQUEST_NUMBER"):
+            channel = "stable"
+        else:
+            channel = channel
+        os.environ["CONAN_CHANNEL"] = channel
     
     args = " ".join(sys.argv[1:])
     builder = ConanMultiPackager(args, username, channel)
