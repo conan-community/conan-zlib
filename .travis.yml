@@ -1,21 +1,33 @@
-language: cpp
+language: python
 sudo: required
 services:
   - docker
 env:
-  - GCC_VERSION: 4.6
-  - GCC_VERSION: 4.8
-  - GCC_VERSION: 4.9
-  - GCC_VERSION: 5.2
-  - GCC_VERSION: 5.3
+ global:
+   - CONAN_UPLOAD: 1
+   - CONAN_REFERENCE: "zlib/1.2.8"
+   - CONAN_USERNAME: "lasote"
+   - CONAN_CHANNEL: "ci"
+   - CONAN_TOTAL_PAGES: 2
+   - CONAN_USE_DOCKER: 1
+ matrix:
+   - CONAN_GCC_VERSIONS: 4.6 CONAN_CURRENT_PAGE=1
+   - CONAN_GCC_VERSIONS: 4.6 CONAN_CURRENT_PAGE=2
+  
+   - CONAN_GCC_VERSIONS: 4.8 CONAN_CURRENT_PAGE=1
+   - CONAN_GCC_VERSIONS: 4.8 CONAN_CURRENT_PAGE=2
+  
+   - CONAN_GCC_VERSIONS: 4.9 CONAN_CURRENT_PAGE=1
+   - CONAN_GCC_VERSIONS: 4.9 CONAN_CURRENT_PAGE=2
+  
+   - CONAN_GCC_VERSIONS: 5.2 CONAN_CURRENT_PAGE=1
+   - CONAN_GCC_VERSIONS: 5.2 CONAN_CURRENT_PAGE=2
+  
+   - CONAN_GCC_VERSIONS: 5.3 CONAN_CURRENT_PAGE=1
+   - CONAN_GCC_VERSIONS: 5.3 CONAN_CURRENT_PAGE=2
+
 install:
-  - wget http://downloads.conan.io/latest_debian -O conan.deb
-  - sudo dpkg -i conan.deb
-  - rm conan.deb
+  - pip install conan_package_tools # It install conan too
   - conan user # It creates the conan data directory
 script:
-  - export CONAN_UPLOAD=1 && 
-    export CONAN_REFERENCE="zlib/1.2.8" && 
-    export CONAN_USERNAME="lasote" && 
-    export CONAN_CHANNEL="travis" && 
-    python build_with_docker.py $GCC_VERSION
+  - python build.py
