@@ -8,19 +8,13 @@ environment:
     CONAN_REFERENCE: "zlib/1.2.8"
     CONAN_USERNAME: "lasote"
     CONAN_CHANNEL: "ci"
-    CONAN_TOTAL_PAGES: 10
+    CONAN_TOTAL_PAGES: 4
     
     matrix:
         - CONAN_CURRENT_PAGE: 1
         - CONAN_CURRENT_PAGE: 2  
         - CONAN_CURRENT_PAGE: 3
         - CONAN_CURRENT_PAGE: 4
-        - CONAN_CURRENT_PAGE: 5
-        - CONAN_CURRENT_PAGE: 6
-        - CONAN_CURRENT_PAGE: 7
-        - CONAN_CURRENT_PAGE: 8
-        - CONAN_CURRENT_PAGE: 9
-        - CONAN_CURRENT_PAGE: 10
 
 install:
   - set PATH=%PATH%;%PYTHON%/Scripts/
