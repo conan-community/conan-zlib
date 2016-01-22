@@ -9,8 +9,7 @@ The packages generated with this **conanfile** can be found in [conan.io](https:
 
 ## Build packages
 
-Download conan client from [Conan.io](https://conan.io) and run:
-
+    $ pip install conan_package_tools
     $ python build.py
     
 ## Upload packages to server
