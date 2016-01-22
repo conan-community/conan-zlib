@@ -3,7 +3,7 @@ from conan.packager import ConanMultiPackager
 import sys
 import platform
 from copy import copy
-      
+
 
 if __name__ == "__main__":
     channel = os.getenv("CONAN_CHANNEL", "testing")
@@ -20,30 +20,20 @@ if __name__ == "__main__":
     travis_branch = os.getenv("TRAVIS_BRANCH", None)
     appveyor = os.getenv("APPVEYOR", False)
     appveyor_branch = os.getenv("APPVEYOR_REPO_BRANCH", None)
-    
-    if travis:
-        if travis_branch=="master":
-            channel = "stable"
-        else:
-            channel = channel
-        os.environ["CONAN_CHANNEL"] = channel
-        
-    if appveyor:
-        if appveyor_branch=="master" and not os.getenv("APPVEYOR_PULL_REQUEST_NUMBER"):
-            channel = "stable"
-        else:
-            channel = channel
-        os.environ["CONAN_CHANNEL"] = channel
-    
+
+    channel = "stable" if travis and travis_branch=="master" else channel
+    channel = "stable" if appveyor and appveyor_branch=="master" and not os.getenv("APPVEYOR_PULL_REQUEST_NUMBER") else channel
+    os.environ["CONAN_CHANNEL"] = channel # Override the environment value for test/conanfile.py file
+
     args = " ".join(sys.argv[1:])
     builder = ConanMultiPackager(args, username, channel)
     builder.add_common_builds(shared_option_name="zlib:shared", visual_versions=[10, 12, 14])
     print(builder.builds)
-    
+
     if use_docker:  
         builder.docker_pack(current_page, total_pages, gcc_versions)
     else:
         builder.pack(current_page, total_pages)
-    
+
     if upload and reference and password:
         builder.upload_packages(reference, password)
