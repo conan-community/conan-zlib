@@ -15,12 +15,6 @@ class ZlibConan(ConanFile):
     exports = ["CMakeLists.txt", "FindZLIB.cmake"]
     url="http://github.com/lasote/conan-zlib"
 
-    def conan_info(self):
-        # We don't want to change the package for each compiler version but
-        # we need the setting to compile with cmake
-        if self.settings.os == "Macos":
-            self.info.settings.compiler.version = "any"
-
     def source(self):
         zip_name = "zlib-1.2.8.zip"
         download("http://zlib.net/zlib128.zip", zip_name)
