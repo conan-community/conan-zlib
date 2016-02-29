@@ -32,7 +32,7 @@ class ZlibConan(ConanFile):
             cd_build = "cd %s && cd _build" % self.ZIP_FOLDER_NAME
             arch = "-m32 " if self.settings.arch == "x86" else ""
             mstackrealign = "" 
-            if self.settings.os == "x86" or self.settings.os == "x86_64":
+            if self.settings.arch == "x86" or self.settings.arch == "x86_64":
                 mstackrealign = "-mstackrealign"
             self.run("cd %s && CFLAGS='%s %s -fPIC -O3' ./configure" % (self.ZIP_FOLDER_NAME, arch, mstackrealign))
             if self.settings.os == "Macos":
