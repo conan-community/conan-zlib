@@ -31,7 +31,10 @@ class ZlibConan(ConanFile):
             self.run("cd %s &&  mkdir _build" % self.ZIP_FOLDER_NAME)
             cd_build = "cd %s && cd _build" % self.ZIP_FOLDER_NAME
             arch = "-m32 " if self.settings.arch == "x86" else ""
-            self.run("cd %s && CFLAGS='%s -mstackrealign -fPIC -O3' ./configure" % (self.ZIP_FOLDER_NAME, arch))
+            mstackrealign = "" 
+            if self.settings.os == "x86" or self.settings.os == "x86_64":
+                mstackrealign = "-mstackrealign"
+            self.run("cd %s && CFLAGS='%s %s -fPIC -O3' ./configure" % (self.ZIP_FOLDER_NAME, arch, mstackrealign))
             if self.settings.os == "Macos":
                 old_str = 'LDSHARED=gcc -dynamiclib -install_name ${exec_prefix}/lib/libz.1.dylib'
                 new_str = 'LDSHARED=gcc -dynamiclib -install_name libz.1.dylib'
