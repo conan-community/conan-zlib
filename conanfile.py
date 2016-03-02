@@ -15,6 +15,12 @@ class ZlibConan(ConanFile):
     exports = ["CMakeLists.txt", "FindZLIB.cmake"]
     url="http://github.com/lasote/conan-zlib"
 
+    def config(self):
+        try: # Try catch can be removed when conan 0.8 is released
+            del self.settings.compiler.libcxx 
+        except: 
+            pass
+        
     def source(self):
         zip_name = "zlib-1.2.8.zip"
         download("http://zlib.net/zlib128.zip", zip_name)
