@@ -14,6 +14,7 @@ class ZlibConan(ConanFile):
     default_options = "shared=False"
     exports = ["CMakeLists.txt", "FindZLIB.cmake"]
     url="http://github.com/lasote/conan-zlib"
+    license="http://www.zlib.net/zlib_license.html"
 
     def config(self):
         try: # Try catch can be removed when conan 0.8 is released
