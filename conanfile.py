@@ -1,7 +1,7 @@
 from conans import ConanFile
 import os
 from conans.tools import download, unzip, replace_in_file
-from conans import CMake
+from conans import CMake, ConfigureEnvironment
 
 
 class ZlibConan(ConanFile):
@@ -35,18 +35,21 @@ class ZlibConan(ConanFile):
             to reuse it later in any other project.
         """
         if self.settings.os == "Linux" or self.settings.os == "Macos":
-            self.run("cd %s &&  mkdir _build" % self.ZIP_FOLDER_NAME)
-            cd_build = "cd %s && cd _build" % self.ZIP_FOLDER_NAME
-            arch = "-m32 " if self.settings.arch == "x86" else ""
-            mstackrealign = "" 
+            env = ConfigureEnvironment(self.deps_cpp_info, self.settings)
+            env_line = env.command_line.replace('CFLAGS="', 'CFLAGS="-fPIC ')
             if self.settings.arch == "x86" or self.settings.arch == "x86_64":
-                mstackrealign = "-mstackrealign"
-            self.run("cd %s && CFLAGS='%s %s -fPIC -O3' ./configure" % (self.ZIP_FOLDER_NAME, arch, mstackrealign))
+                env_line = env_line.replace('CFLAGS="', 'CFLAGS="-mstackrealign ')
+            self.output.warn(env_line)
+                        
             if self.settings.os == "Macos":
-                old_str = 'LDSHARED=gcc -dynamiclib -install_name ${exec_prefix}/lib/libz.1.dylib'
-                new_str = 'LDSHARED=gcc -dynamiclib -install_name libz.1.dylib'
-                replace_in_file("./%s/Makefile" % self.ZIP_FOLDER_NAME, old_str, new_str)
-            self.run("cd %s && make" % self.ZIP_FOLDER_NAME)
+                old_str = '-install_name $libdir/$SHAREDLIBM'
+                new_str = '-install_name $SHAREDLIBM'
+                replace_in_file("./%s/configure" % self.ZIP_FOLDER_NAME, old_str, new_str)
+                     
+            self.run("cd %s && %s ./configure" % (self.ZIP_FOLDER_NAME, env_line))
+            #self.run("cd %s && %s make check" % (self.ZIP_FOLDER_NAME, env.command_line))
+            self.run("cd %s && %s make" % (self.ZIP_FOLDER_NAME, env_line))
+         
         else:
             cmake = CMake(self.settings)
             if self.settings.os == "Windows":
