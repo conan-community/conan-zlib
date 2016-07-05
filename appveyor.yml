@@ -1,4 +1,4 @@
-build: false
+build:
   verbosity: detailed
 environment:
     PYTHON: "C:\\Python27"
