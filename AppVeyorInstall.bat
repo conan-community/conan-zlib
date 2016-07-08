@@ -16,7 +16,11 @@ msiexec.exe /qn /i https://github.com/tim-lebedkov/npackd-cpp/releases/download/
 if %errorlevel% neq 0 exit /b %errorlevel%
 
 set npackd_cl=C:\Program Files (x86)\NpackdCL
+
 "%npackd_cl%\ncl" set-repo -u https://npackd.appspot.com/rep/xml?tag=stable -u https://npackd.appspot.com/rep/xml?tag=stable64
+if %errorlevel% neq 0 exit /b %errorlevel%
+
+"%npackd_cl%\ncl" detect
 if %errorlevel% neq 0 exit /b %errorlevel%
 
 "%npackd_cl%\ncl" add -p mingw-w64-i686-sjlj-posix -v 4.9.2 -f c:\mingw-w64-i686-sjlj-posix-4.9.2
