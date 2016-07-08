@@ -26,6 +26,9 @@ if %errorlevel% neq 0 exit /b %errorlevel%
 "%npackd_cl%\ncl" add -p mingw-w64-i686-sjlj-posix -v 4.9.2 -f c:\mingw-w64-i686-sjlj-posix-4.9.2
 if %errorlevel% neq 0 exit /b %errorlevel%
 
+"%npackd_cl%\ncl" add -p mingw-w64-x86_64-seh-posix -v 4.9.2 -f c:\mingw-w64-x86_64-seh-posix-4.9.2
+if %errorlevel% neq 0 exit /b %errorlevel%
+
 goto :eof
 
 :conan_package_tools
