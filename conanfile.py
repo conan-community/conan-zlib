@@ -77,11 +77,19 @@ class ZlibConan(ConanFile):
         if self.settings.os == "Windows":
             if self.options.shared:
                 self.copy(pattern="*.dll", dst="bin", src="_build", keep_path=False)
-                self.copy(pattern="*zlibd.lib", dst="lib", src="_build", keep_path=False)
-                self.copy(pattern="*zlib.lib", dst="lib", src="_build", keep_path=False)
+                if self.settings.compiler == "gcc":
+                    self.copy(pattern="*zlibd.dll.a", dst="lib", src="_build", keep_path=False)
+                    self.copy(pattern="*zlib.dll.a", dst="lib", src="_build", keep_path=False)
+                else:
+                    self.copy(pattern="*zlibd.lib", dst="lib", src="_build", keep_path=False)
+                    self.copy(pattern="*zlib.lib", dst="lib", src="_build", keep_path=False)
             else:
-                self.copy(pattern="*zlibstaticd.lib", dst="lib", src="_build", keep_path=False)
-                self.copy(pattern="*zlibstatic.lib", dst="lib", src="_build", keep_path=False)
+                if self.settings.compiler == "gcc":
+                    self.copy(pattern="*zlibstaticd.a", dst="lib", src="_build", keep_path=False)
+                    self.copy(pattern="*zlibstatic.a", dst="lib", src="_build", keep_path=False)
+                else:
+                    self.copy(pattern="*zlibstaticd.lib", dst="lib", src="_build", keep_path=False)
+                    self.copy(pattern="*zlibstatic.lib", dst="lib", src="_build", keep_path=False)
         else:
             if self.options.shared:
                 if self.settings.os == "Macos":
