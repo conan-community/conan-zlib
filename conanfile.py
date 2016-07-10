@@ -104,14 +104,20 @@ class ZlibConan(ConanFile):
         
         if self.settings.os == "Windows":
             if self.options.shared:
-                if self.settings.build_type == "Debug":
-                    self.cpp_info.libs = ['zlibd']
-                else:
+                if self.settings.compiler == "gcc":
                     self.cpp_info.libs = ['zlib']
-            else:
-                if self.settings.build_type == "Debug":
-                    self.cpp_info.libs = ['zlibstaticd']
                 else:
+                    if self.settings.build_type == "Debug":
+                        self.cpp_info.libs = ['zlibd']
+                    else:
+                        self.cpp_info.libs = ['zlib']
+            else:
+                if self.settings.compiler == "gcc":
                     self.cpp_info.libs = ['zlibstatic']
+                else:
+                    if self.settings.build_type == "Debug":
+                        self.cpp_info.libs = ['zlibstaticd']
+                    else:
+                        self.cpp_info.libs = ['zlibstatic']
         else:
             self.cpp_info.libs = ['z']

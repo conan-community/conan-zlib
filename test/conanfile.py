@@ -4,7 +4,7 @@ import os
 
 ############### CONFIGURE THESE VALUES ##################
 default_user = "lasote"
-default_channel = "ci"
+default_channel = "testing"
 #########################################################
 
 channel = os.getenv("CONAN_CHANNEL", default_channel)

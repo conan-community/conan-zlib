@@ -2,11 +2,11 @@ echo on
 
 set PATH=%PATH%;%PYTHON%/Scripts/
 
-rem  It install conan too
+rem  It installs Conan too
 pip.exe install conan_package_tools
 if %errorlevel% neq 0 exit /b %errorlevel%
 
-rem It creates the conan data directory
+rem It creates the Conan data directory
 conan user
 if %errorlevel% neq 0 exit /b %errorlevel%
 
