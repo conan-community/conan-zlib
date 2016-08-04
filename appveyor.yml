@@ -17,6 +17,8 @@ environment:
         - CONAN_CURRENT_PAGE: 4
 
 install:
+  # Workaround for CMake not wanting sh.exe on PATH for MinGW
+  - set PATH=%PATH:C:\Program Files (x86)\Git\bin;=%
   - set PATH=%PATH%;%PYTHON%/Scripts/
   - pip.exe install conan_package_tools # It install conan too
   - conan user # It creates the conan data directory
