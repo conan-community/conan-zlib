@@ -15,7 +15,7 @@ class ZlibConan(ConanFile):
     exports = ["CMakeLists.txt", "FindZLIB.cmake"]
     url="http://github.com/lasote/conan-zlib"
     license="http://www.zlib.net/zlib_license.html"
-
+    
     def config(self):
         try: # Try catch can be removed when conan 0.8 is released
             del self.settings.compiler.libcxx 
@@ -79,9 +79,11 @@ class ZlibConan(ConanFile):
                 self.copy(pattern="*.dll", dst="bin", src="_build", keep_path=False)
                 self.copy(pattern="*zlibd.lib", dst="lib", src="_build", keep_path=False)
                 self.copy(pattern="*zlib.lib", dst="lib", src="_build", keep_path=False)
+                self.copy(pattern="*zlib.lib", dst="lib", src="_build", keep_path=False)
+                self.copy(pattern="*zlib.dll.a", dst="lib", src="_build", keep_path=False)
             else:
-                self.copy(pattern="*zlibstaticd.lib", dst="lib", src="_build", keep_path=False)
-                self.copy(pattern="*zlibstatic.lib", dst="lib", src="_build", keep_path=False)
+                self.copy(pattern="*zlibstaticd.*", dst="lib", src="_build", keep_path=False)
+                self.copy(pattern="*zlibstatic.*", dst="lib", src="_build", keep_path=False)
         else:
             if self.options.shared:
                 if self.settings.os == "Macos":
@@ -93,15 +95,14 @@ class ZlibConan(ConanFile):
                 self.copy(pattern="*.a", dst="lib", src=self.ZIP_FOLDER_NAME, keep_path=False)
 
     def package_info(self):
-        
         if self.settings.os == "Windows":
             if self.options.shared:
-                if self.settings.build_type == "Debug":
+                if self.settings.build_type == "Debug" and self.settings.compiler == "Visual Studio":
                     self.cpp_info.libs = ['zlibd']
                 else:
                     self.cpp_info.libs = ['zlib']
             else:
-                if self.settings.build_type == "Debug":
+                if self.settings.build_type == "Debug" and  self.settings.compiler == "Visual Studio":
                     self.cpp_info.libs = ['zlibstaticd']
                 else:
                     self.cpp_info.libs = ['zlibstatic']
