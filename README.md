@@ -4,7 +4,7 @@
 
 # conan-zlib
 
-[Conan.io](https://conan.io) package for ZLIB library
+[Conan.io](https://conan.io) package for ZLIB library. Thanks to Tim Lebedkov for the MinGW integration help! :)
 
 The packages generated with this **conanfile** can be found in [conan.io](https://conan.io/source/zlib/1.2.8/lasote/stable).
 
