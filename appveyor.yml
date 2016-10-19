@@ -9,7 +9,7 @@ environment:
     CONAN_USERNAME: "lasote"
     CONAN_CHANNEL: "testing"
     CONAN_TOTAL_PAGES: 4
-    CONAN_STABLE_BRANCH_PATTERN="release/*"
+    CONAN_STABLE_BRANCH_PATTERN: "release/*"
     
     matrix:
         - CONAN_CURRENT_PAGE: 1
