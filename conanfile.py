@@ -7,7 +7,7 @@ from conans import CMake, ConfigureEnvironment
 class ZlibConan(ConanFile):
     name = "zlib"
     version = "1.2.8"
-    ZIP_FOLDER_NAME = "zlib-1.2.8"
+    ZIP_FOLDER_NAME = "zlib-%s" % version
     generators = "cmake"
     settings = "os", "arch", "compiler", "build_type"
     options = {"shared": [True, False]}
@@ -15,16 +15,14 @@ class ZlibConan(ConanFile):
     exports = ["CMakeLists.txt", "FindZLIB.cmake"]
     url="http://github.com/lasote/conan-zlib"
     license="http://www.zlib.net/zlib_license.html"
+    description="A Massively Spiffy Yet Delicately Unobtrusive Compression Library (Also Free, Not to Mention Unencumbered by Patents)"
     
     def config(self):
-        try: # Try catch can be removed when conan 0.8 is released
-            del self.settings.compiler.libcxx 
-        except: 
-            pass
-        
+        del self.settings.compiler.libcxx 
+
     def source(self):
-        zip_name = "zlib-1.2.8.zip"
-        download("http://zlib.net/zlib128.zip", zip_name)
+        zip_name = "zlib-%s.tar.gz" % self.version
+        download("http://downloads.sourceforge.net/project/libpng/zlib/%s/%s" % (self.version, zip_name), zip_name)
         unzip(zip_name)
         os.unlink(zip_name)
         if self.settings.os != "Windows":
