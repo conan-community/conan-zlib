@@ -80,8 +80,7 @@ class ZlibConan(ConanFile):
                 self.copy(pattern="*zlib.lib", dst="lib", src="_build", keep_path=False)
                 self.copy(pattern="*zlib.dll.a", dst="lib", src="_build", keep_path=False)
             else:
-                self.copy(pattern="*zlibstaticd.*", dst="lib", src="_build", keep_path=False)
-                self.copy(pattern="*zlibstatic.*", dst="lib", src="_build", keep_path=False)
+                self.copy(pattern="zlibstatic*.lib", dst="lib", src="_build/lib")
         else:
             if self.options.shared:
                 if self.settings.os == "Macos":
