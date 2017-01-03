@@ -16,9 +16,9 @@ class ZlibConan(ConanFile):
     url="http://github.com/lasote/conan-zlib"
     license="http://www.zlib.net/zlib_license.html"
     description="A Massively Spiffy Yet Delicately Unobtrusive Compression Library (Also Free, Not to Mention Unencumbered by Patents)"
-    
+
     def config(self):
-        del self.settings.compiler.libcxx 
+        del self.settings.compiler.libcxx
 
     def source(self):
         zip_name = "zlib-%s.tar.gz" % self.version
@@ -38,16 +38,16 @@ class ZlibConan(ConanFile):
             if self.settings.arch == "x86" or self.settings.arch == "x86_64":
                 env_line = env_line.replace('CFLAGS="', 'CFLAGS="-mstackrealign ')
             self.output.warn(env_line)
-                        
+
             if self.settings.os == "Macos":
                 old_str = '-install_name $libdir/$SHAREDLIBM'
                 new_str = '-install_name $SHAREDLIBM'
                 replace_in_file("./%s/configure" % self.ZIP_FOLDER_NAME, old_str, new_str)
-                     
+
             self.run("cd %s && %s ./configure" % (self.ZIP_FOLDER_NAME, env_line))
             #self.run("cd %s && %s make check" % (self.ZIP_FOLDER_NAME, env.command_line_env))
             self.run("cd %s && %s make" % (self.ZIP_FOLDER_NAME, env_line))
-         
+
         else:
             cmake = CMake(self.settings)
             if self.settings.os == "Windows":
@@ -66,7 +66,7 @@ class ZlibConan(ConanFile):
         """
         # Copy findZLIB.cmake to package
         self.copy("FindZLIB.cmake", ".", ".")
-        
+
         # Copying zlib.h, zutil.h, zconf.h
         self.copy("*.h", "include", "%s" % (self.ZIP_FOLDER_NAME), keep_path=False)
         self.copy("*.h", "include", "%s" % ("_build"), keep_path=False)
