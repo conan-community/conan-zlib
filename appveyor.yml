@@ -5,7 +5,7 @@ environment:
     PYTHON_ARCH: "32"
     
     CONAN_UPLOAD: 1
-    CONAN_REFERENCE: "zlib/1.2.9"
+    CONAN_REFERENCE: "zlib/1.2.11"
     CONAN_USERNAME: "lasote"
     CONAN_CHANNEL: "testing"
     CONAN_TOTAL_PAGES: 4
