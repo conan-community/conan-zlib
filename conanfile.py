@@ -1,7 +1,5 @@
-from conans import ConanFile
+from conans import ConanFile, tools, CMake, AutoToolsBuildEnvironment
 import os
-from conans.tools import download, unzip, replace_in_file
-from conans import CMake, ConfigureEnvironment
 
 
 class ZlibConan(ConanFile):
@@ -13,17 +11,18 @@ class ZlibConan(ConanFile):
     options = {"shared": [True, False]}
     default_options = "shared=False"
     exports = ["CMakeLists.txt", "FindZLIB.cmake"]
-    url="http://github.com/lasote/conan-zlib"
-    license="http://www.zlib.net/zlib_license.html"
-    description="A Massively Spiffy Yet Delicately Unobtrusive Compression Library (Also Free, Not to Mention Unencumbered by Patents)"
+    url = "http://github.com/lasote/conan-zlib"
+    license = "http://www.zlib.net/zlib_license.html"
+    description = "A Massively Spiffy Yet Delicately Unobtrusive Compression Library " \
+                  "(Also Free, Not to Mention Unencumbered by Patents)"
     
     def config(self):
         del self.settings.compiler.libcxx 
 
     def source(self):
         zip_name = "zlib-%s.tar.gz" % self.version
-        download("http://downloads.sourceforge.net/project/libpng/zlib/%s/%s" % (self.version, zip_name), zip_name)
-        unzip(zip_name)
+        tools.download("http://downloads.sourceforge.net/project/libpng/zlib/%s/%s" % (self.version, zip_name), zip_name)
+        tools.unzip(zip_name)
         os.unlink(zip_name)
         if self.settings.os != "Windows":
             self.run("chmod +x ./%s/configure" % self.ZIP_FOLDER_NAME)
@@ -33,32 +32,32 @@ class ZlibConan(ConanFile):
             to reuse it later in any other project.
         """
         if self.settings.os == "Linux" or self.settings.os == "Macos":
-            env = ConfigureEnvironment(self.deps_cpp_info, self.settings)
-            env_line = env.command_line_env.replace('CFLAGS="', 'CFLAGS="-fPIC ')
+            env_build = AutoToolsBuildEnvironment(self)
             if self.settings.arch == "x86" or self.settings.arch == "x86_64":
-                env_line = env_line.replace('CFLAGS="', 'CFLAGS="-mstackrealign ')
-            self.output.warn(env_line)
-                        
+                env_build.compilation_flags.append('-mstackrealign')
+
             if self.settings.os == "Macos":
                 old_str = '-install_name $libdir/$SHAREDLIBM'
                 new_str = '-install_name $SHAREDLIBM'
-                replace_in_file("./%s/configure" % self.ZIP_FOLDER_NAME, old_str, new_str)
-                     
-            self.run("cd %s && %s ./configure" % (self.ZIP_FOLDER_NAME, env_line))
-            #self.run("cd %s && %s make check" % (self.ZIP_FOLDER_NAME, env.command_line_env))
-            self.run("cd %s && %s make" % (self.ZIP_FOLDER_NAME, env_line))
-         
+                tools.replace_in_file("./%s/configure" % self.ZIP_FOLDER_NAME, old_str, new_str)
+
+            with tools.environment_append(env_build.vars):
+                with tools.chdir(self.ZIP_FOLDER_NAME):
+                    self.run("./configure")
+                    self.run("make check")
+                    self.run("make")
         else:
             cmake = CMake(self.settings)
             if self.settings.os == "Windows":
                 self.run("IF not exist _build mkdir _build")
             else:
                 self.run("mkdir _build")
-            cd_build = "cd _build"
-            self.output.warn('%s && cmake .. %s' % (cd_build, cmake.command_line))
-            self.run('%s && cmake .. %s' % (cd_build, cmake.command_line))
-            self.output.warn("%s && cmake --build . %s" % (cd_build, cmake.build_config))
-            self.run("%s && cmake --build . %s" % (cd_build, cmake.build_config))
+
+            with tools.chdir("./_build"):
+                self.output.warn('cmake .. %s' % cmake.command_line)
+                self.run('cmake .. %s' % cmake.command_line)
+                self.output.warn("cmake --build . %s" % cmake.build_config)
+                self.run("cmake --build . %s" % cmake.build_config)
 
     def package(self):
         """ Define your conan structure: headers, libs, bins and data. After building your
