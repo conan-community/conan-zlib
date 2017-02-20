@@ -35,6 +35,7 @@ class ZlibConan(ConanFile):
             env_build = AutoToolsBuildEnvironment(self)
             if self.settings.arch == "x86" or self.settings.arch == "x86_64":
                 env_build.compilation_flags.append('-mstackrealign')
+                env_build.fpic = True
 
             if self.settings.os == "Macos":
                 old_str = '-install_name $libdir/$SHAREDLIBM'
@@ -44,7 +45,6 @@ class ZlibConan(ConanFile):
             with tools.environment_append(env_build.vars):
                 with tools.chdir(self.ZIP_FOLDER_NAME):
                     self.run("./configure")
-                    self.run("make check")
                     self.run("make")
         else:
             cmake = CMake(self.settings)
