@@ -1,4 +1,5 @@
 from conans import ConanFile, tools, CMake, AutoToolsBuildEnvironment
+from conans.util import files
 import os
 
 
@@ -34,7 +35,7 @@ class ZlibConan(ConanFile):
         if self.settings.os == "Linux" or self.settings.os == "Macos":
             env_build = AutoToolsBuildEnvironment(self)
             if self.settings.arch == "x86" or self.settings.arch == "x86_64":
-                env_build.compilation_flags.append('-mstackrealign')
+                env_build.flags.append('-mstackrealign')
                 env_build.fpic = True
 
             if self.settings.os == "Macos":
@@ -48,16 +49,10 @@ class ZlibConan(ConanFile):
                     self.run("make")
         else:
             cmake = CMake(self.settings)
-            if self.settings.os == "Windows":
-                self.run("IF not exist _build mkdir _build")
-            else:
-                self.run("mkdir _build")
-
+            files.mkdir("_build")
             with tools.chdir("./_build"):
-                self.output.warn('cmake .. %s' % cmake.command_line)
-                self.run('cmake .. %s' % cmake.command_line)
-                self.output.warn("cmake --build . %s" % cmake.build_config)
-                self.run("cmake --build . %s" % cmake.build_config)
+                cmake.configure(self)
+                cmake.build(self)
 
     def package(self):
         """ Define your conan structure: headers, libs, bins and data. After building your
@@ -67,8 +62,8 @@ class ZlibConan(ConanFile):
         self.copy("FindZLIB.cmake", ".", ".")
         
         # Copying zlib.h, zutil.h, zconf.h
-        self.copy("*.h", "include", "%s" % (self.ZIP_FOLDER_NAME), keep_path=False)
-        self.copy("*.h", "include", "%s" % ("_build"), keep_path=False)
+        self.copy("*.h", "include", "%s" % self.ZIP_FOLDER_NAME, keep_path=False)
+        self.copy("*.h", "include", "%s" % "_build", keep_path=False)
 
         # Copying static and dynamic libs
         if self.settings.os == "Windows":
