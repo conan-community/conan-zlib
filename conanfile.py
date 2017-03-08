@@ -17,7 +17,7 @@ class ZlibConan(ConanFile):
     description = "A Massively Spiffy Yet Delicately Unobtrusive Compression Library " \
                   "(Also Free, Not to Mention Unencumbered by Patents)"
     
-    def config(self):
+    def configure(self):
         del self.settings.compiler.libcxx 
 
     def source(self):
@@ -71,7 +71,6 @@ class ZlibConan(ConanFile):
                 self.copy(pattern="*.dll", dst="bin", src="_build", keep_path=False)
                 self.copy(pattern="*zlibd.lib", dst="lib", src="_build", keep_path=False)
                 self.copy(pattern="*zlib.lib", dst="lib", src="_build", keep_path=False)
-                self.copy(pattern="*zlib.lib", dst="lib", src="_build", keep_path=False)
                 self.copy(pattern="*zlib.dll.a", dst="lib", src="_build", keep_path=False)
             else:
                 self.copy(pattern="*zlibstaticd.*", dst="lib", src="_build", keep_path=False)
@@ -88,15 +87,8 @@ class ZlibConan(ConanFile):
 
     def package_info(self):
         if self.settings.os == "Windows":
-            if self.options.shared:
-                if self.settings.build_type == "Debug" and self.settings.compiler == "Visual Studio":
-                    self.cpp_info.libs = ['zlibd']
-                else:
-                    self.cpp_info.libs = ['zlib']
-            else:
-                if self.settings.build_type == "Debug" and  self.settings.compiler == "Visual Studio":
-                    self.cpp_info.libs = ['zlibstaticd']
-                else:
-                    self.cpp_info.libs = ['zlibstatic']
+            self.cpp_info.libs = ['zlib'] if self.options.shared else ['zlibstatic']
+            if self.settings.build_type == "Debug" and self.settings.compiler == "Visual Studio":
+                self.cpp_info.libs[0] += "d"
         else:
             self.cpp_info.libs = ['z']

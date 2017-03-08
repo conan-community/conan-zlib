@@ -19,6 +19,5 @@ if [[ "$(uname -s)" == 'Darwin' ]]; then
     pyenv activate conan
 fi
 
-pip install conan==0.20.0dev0
 pip install conan_package_tools # It install conan too
 conan user
