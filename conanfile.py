@@ -32,9 +32,6 @@ class ZlibConan(ConanFile):
             self.run("chmod +x ./%s/configure" % self.ZIP_FOLDER_NAME)
 
     def build(self):
-        """ Define your project building. You decide the way of building it
-            to reuse it later in any other project.
-        """
         with tools.chdir(self.ZIP_FOLDER_NAME):
             files.mkdir("_build")
             if self.settings.os == "Linux" or self.settings.os == "Macos":
@@ -50,7 +47,7 @@ class ZlibConan(ConanFile):
                         tools.replace_in_file("configure", old_str, new_str)
     
                     with tools.environment_append(env_build.vars):
-                        self.run("./configure")
+                        self.run("../configure")
                         self.run("make")
             else:
                 cmake = CMake(self.settings)                
@@ -58,9 +55,6 @@ class ZlibConan(ConanFile):
                 cmake.build(self, build_dir="./_build")
 
     def package(self):
-        """ Define your conan structure: headers, libs, bins and data. After building your
-            project, this method is called to create a defined structure:
-        """
         # Copy findZLIB.cmake to package
         self.copy("FindZLIB.cmake", ".", ".")
         
