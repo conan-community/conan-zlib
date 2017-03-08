@@ -6,7 +6,7 @@ language: python
 env:
   global:
     - CONAN_UPLOAD=1
-    - CONAN_REFERENCE="zlib/1.2.9"
+    - CONAN_REFERENCE="zlib/1.2.11"
     - CONAN_USERNAME="lasote"
     - CONAN_CHANNEL="testing"
     - CONAN_TOTAL_PAGES=1
@@ -21,6 +21,8 @@ env:
     - CONAN_GCC_VERSIONS=5.3 CONAN_USE_DOCKER=1
     - CONAN_GCC_VERSIONS=5.4 CONAN_USE_DOCKER=1
     - CONAN_GCC_VERSIONS=6.2 CONAN_USE_DOCKER=1
+    - CONAN_GCC_VERSIONS=6.3 CONAN_USE_DOCKER=1
+
 matrix:
    include:
        - os: osx
