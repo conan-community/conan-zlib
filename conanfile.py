@@ -36,23 +36,24 @@ class ZlibConan(ConanFile):
             to reuse it later in any other project.
         """
         with tools.chdir(self.ZIP_FOLDER_NAME):
+            files.mkdir("_build")
             if self.settings.os == "Linux" or self.settings.os == "Macos":
-                env_build = AutoToolsBuildEnvironment(self)
-                if self.settings.arch == "x86" or self.settings.arch == "x86_64":
-                    env_build.flags.append('-mstackrealign')
-                    env_build.fpic = True
-
-                if self.settings.os == "Macos":
-                    old_str = '-install_name $libdir/$SHAREDLIBM'
-                    new_str = '-install_name $SHAREDLIBM'
-                    tools.replace_in_file("configure", old_str, new_str)
-
-                with tools.environment_append(env_build.vars):
-                    self.run("./configure")
-                    self.run("make")
+                with tools.chdir("_build"):
+                    env_build = AutoToolsBuildEnvironment(self)
+                    if self.settings.arch == "x86" or self.settings.arch == "x86_64":
+                        env_build.flags.append('-mstackrealign')
+                        env_build.fpic = True
+    
+                    if self.settings.os == "Macos":
+                        old_str = '-install_name $libdir/$SHAREDLIBM'
+                        new_str = '-install_name $SHAREDLIBM'
+                        tools.replace_in_file("configure", old_str, new_str)
+    
+                    with tools.environment_append(env_build.vars):
+                        self.run("./configure")
+                        self.run("make")
             else:
-                cmake = CMake(self.settings)
-                files.mkdir("_build")
+                cmake = CMake(self.settings)                
                 cmake.configure(self, build_dir="./_build")
                 cmake.build(self, build_dir="./_build")
 
