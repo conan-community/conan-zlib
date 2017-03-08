@@ -1,5 +1,6 @@
 from conans import ConanFile, tools, CMake, AutoToolsBuildEnvironment
 from conans.util import files
+from conans import __version__ as conan_version
 import os
 
 
@@ -18,7 +19,9 @@ class ZlibConan(ConanFile):
                   "(Also Free, Not to Mention Unencumbered by Patents)"
     
     def configure(self):
-        del self.settings.compiler.libcxx 
+        del self.settings.compiler.libcxx
+        if conan_version < "0.20.0":
+            raise ConanException("This recipe works with conan >= 0.20.0, please update your conan client version")
 
     def source(self):
         zip_name = "zlib-%s.tar.gz" % self.version
@@ -65,24 +68,24 @@ class ZlibConan(ConanFile):
         self.copy("*.h", "include", "%s" % "_build", keep_path=False)
 
         # Copying static and dynamic libs
+        build_dir = os.path.join(self.ZIP_FOLDER_NAME, "_build")
         if self.settings.os == "Windows":
             if self.options.shared:
-                self.copy(pattern="*.dll", dst="bin", src="_build", keep_path=False)
-                self.copy(pattern="*zlibd.lib", dst="lib", src="_build", keep_path=False)
-                self.copy(pattern="*zlib.lib", dst="lib", src="_build", keep_path=False)
-                self.copy(pattern="*zlib.dll.a", dst="lib", src="_build", keep_path=False)
+                self.copy(pattern="*.dll", dst="bin", src=build_dir, keep_path=False)
+                self.copy(pattern="*zlibd.lib", dst="lib", src=build_dir, keep_path=False)
+                self.copy(pattern="*zlib.lib", dst="lib", src=build_dir, keep_path=False)
+                self.copy(pattern="*zlib.dll.a", dst="lib", src=build_dir, keep_path=False)
             else:
-                self.copy(pattern="*zlibstaticd.*", dst="lib", src="_build", keep_path=False)
-                self.copy(pattern="*zlibstatic.*", dst="lib", src="_build", keep_path=False)
+                self.copy(pattern="*zlibstaticd.*", dst="lib", src=build_dir, keep_path=False)
+                self.copy(pattern="*zlibstatic.*", dst="lib", src=build_dir, keep_path=False)
         else:
             if self.options.shared:
                 if self.settings.os == "Macos":
-                    self.copy(pattern="*.dylib", dst="lib", keep_path=False)
+                    self.copy(pattern="*.dylib", dst="lib", src=build_dir, keep_path=False)
                 else:
-                    self.copy(pattern="*.so*", dst="lib", src=self.ZIP_FOLDER_NAME, keep_path=False)
+                    self.copy(pattern="*.so*", dst="lib", src=build_dir, keep_path=False)
             else:
-                self.copy(pattern="*.a", dst="lib", src="%s/_build" % self.ZIP_FOLDER_NAME, keep_path=False)
-                self.copy(pattern="*.a", dst="lib", src=self.ZIP_FOLDER_NAME, keep_path=False)
+                self.copy(pattern="*.a", dst="lib", src=build_dir, keep_path=False)
 
     def package_info(self):
         if self.settings.os == "Windows":
