@@ -32,27 +32,26 @@ class ZlibConan(ConanFile):
         """ Define your project building. You decide the way of building it
             to reuse it later in any other project.
         """
-        if self.settings.os == "Linux" or self.settings.os == "Macos":
-            env_build = AutoToolsBuildEnvironment(self)
-            if self.settings.arch == "x86" or self.settings.arch == "x86_64":
-                env_build.flags.append('-mstackrealign')
-                env_build.fpic = True
+        with tools.chdir(self.ZIP_FOLDER_NAME):
+            if self.settings.os == "Linux" or self.settings.os == "Macos":
+                env_build = AutoToolsBuildEnvironment(self)
+                if self.settings.arch == "x86" or self.settings.arch == "x86_64":
+                    env_build.flags.append('-mstackrealign')
+                    env_build.fpic = True
 
-            if self.settings.os == "Macos":
-                old_str = '-install_name $libdir/$SHAREDLIBM'
-                new_str = '-install_name $SHAREDLIBM'
-                tools.replace_in_file("./%s/configure" % self.ZIP_FOLDER_NAME, old_str, new_str)
+                if self.settings.os == "Macos":
+                    old_str = '-install_name $libdir/$SHAREDLIBM'
+                    new_str = '-install_name $SHAREDLIBM'
+                    tools.replace_in_file("configure", old_str, new_str)
 
-            with tools.environment_append(env_build.vars):
-                with tools.chdir(self.ZIP_FOLDER_NAME):
+                with tools.environment_append(env_build.vars):
                     self.run("./configure")
                     self.run("make")
-        else:
-            cmake = CMake(self.settings)
-            files.mkdir("_build")
-            with tools.chdir("./_build"):
-                cmake.configure(self)
-                cmake.build(self)
+            else:
+                cmake = CMake(self.settings)
+                files.mkdir("_build")
+                cmake.configure(self, build_dir="./_build")
+                cmake.build(self, build_dir="./_build")
 
     def package(self):
         """ Define your conan structure: headers, libs, bins and data. After building your
