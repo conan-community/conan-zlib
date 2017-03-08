@@ -44,7 +44,7 @@ class ZlibConan(ConanFile):
                     if self.settings.os == "Macos":
                         old_str = '-install_name $libdir/$SHAREDLIBM'
                         new_str = '-install_name $SHAREDLIBM'
-                        tools.replace_in_file("configure", old_str, new_str)
+                        tools.replace_in_file("../configure", old_str, new_str)
     
                     with tools.environment_append(env_build.vars):
                         self.run("../configure")
