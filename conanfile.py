@@ -34,8 +34,8 @@ class ZlibConan(ConanFile):
     def build(self):
         with tools.chdir(self.ZIP_FOLDER_NAME):
             files.mkdir("_build")
-            if self.settings.os == "Linux" or self.settings.os == "Macos":
-                with tools.chdir("_build"):
+            with tools.chdir("_build"):
+                if self.settings.os == "Linux" or self.settings.os == "Macos":
                     env_build = AutoToolsBuildEnvironment(self)
                     if self.settings.arch == "x86" or self.settings.arch == "x86_64":
                         env_build.flags.append('-mstackrealign')
@@ -49,10 +49,10 @@ class ZlibConan(ConanFile):
                     with tools.environment_append(env_build.vars):
                         self.run("../configure")
                         self.run("make")
-            else:
-                cmake = CMake(self.settings)                
-                cmake.configure(self, build_dir="./_build")
-                cmake.build(self, build_dir="./_build")
+                else:
+                    cmake = CMake(self.settings)                
+                    cmake.configure(self, build_dir=".")
+                    cmake.build(self, build_dir=".")
 
     def package(self):
         # Copy findZLIB.cmake to package
