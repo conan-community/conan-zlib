@@ -92,3 +92,4 @@ class ZlibConan(ConanFile):
                 self.cpp_info.libs[0] += "d"
         else:
             self.cpp_info.libs = ['z']
+            self.env_info.PKG_CONFIG_PATH.append(self.package_folder)
