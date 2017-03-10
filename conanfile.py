@@ -57,6 +57,9 @@ class ZlibConan(ConanFile):
     def package(self):
         # Copy findZLIB.cmake to package
         self.copy("FindZLIB.cmake", ".", ".")
+
+        # Copy pc file
+        self.copy("*.pc", dst="", keep_path=False)
         
         # Copying zlib.h, zutil.h, zconf.h
         self.copy("*.h", "include", "%s" % self.ZIP_FOLDER_NAME, keep_path=False)
