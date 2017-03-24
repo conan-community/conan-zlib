@@ -77,7 +77,6 @@ class ZlibConan(ConanFile):
                 self.copy(pattern="*.dll", dst="bin", src="_build", keep_path=False)
                 self.copy(pattern="*zlibd.lib", dst="lib", src="_build", keep_path=False)
                 self.copy(pattern="*zlib.lib", dst="lib", src="_build", keep_path=False)
-                self.copy(pattern="*zlib.lib", dst="lib", src="_build", keep_path=False)
                 self.copy(pattern="*zlib.dll.a", dst="lib", src="_build", keep_path=False)
             else:
                 self.copy(pattern="*zlibstaticd.*", dst="lib", src="_build", keep_path=False)
