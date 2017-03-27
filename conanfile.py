@@ -1,3 +1,5 @@
+import platform
+
 from conans import ConanFile
 import os
 from conans.tools import download, unzip, replace_in_file
@@ -32,7 +34,7 @@ class ZlibConan(ConanFile):
         """ Define your project building. You decide the way of building it
             to reuse it later in any other project.
         """
-        if self.settings.os == "Linux" or self.settings.os == "Macos":
+        if platform.system() != "Windows":
             env = ConfigureEnvironment(self.deps_cpp_info, self.settings)
             env_line = env.command_line_env.replace('CFLAGS="', 'CFLAGS="-fPIC ')
             if self.settings.arch == "x86" or self.settings.arch == "x86_64":

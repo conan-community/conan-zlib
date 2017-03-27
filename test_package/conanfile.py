@@ -10,6 +10,7 @@ default_channel = "testing"
 channel = os.getenv("CONAN_CHANNEL", default_channel)
 username = os.getenv("CONAN_USERNAME", default_user)
 
+
 class DefaultNameConan(ConanFile):
     name = "DefaultName"
     version = "0.1"
