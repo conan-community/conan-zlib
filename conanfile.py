@@ -20,8 +20,8 @@ class ZlibConan(ConanFile):
     
     def configure(self):
         del self.settings.compiler.libcxx
-        if conan_version < "0.21.0":
-            raise Exception("This recipe works with conan >= 0.21.0, please update your conan client version")
+        if conan_version < "0.20.0":
+            raise Exception("This recipe works with conan >= 0.20.0, please update your conan client version")
 
     def source(self):
         zip_name = "zlib-%s.tar.gz" % self.version
@@ -39,17 +39,18 @@ class ZlibConan(ConanFile):
                     env_build = AutoToolsBuildEnvironment(self)
                     if self.settings.arch == "x86" or self.settings.arch == "x86_64":
                         env_build.flags.append('-mstackrealign')
-                        env_build.fpic = True
+                    
+                    env_build.fpic = True
     
                     if self.settings.os == "Macos":
                         old_str = '-install_name $libdir/$SHAREDLIBM'
                         new_str = '-install_name $SHAREDLIBM'
                         tools.replace_in_file("../configure", old_str, new_str)
 
-                    try: # Available in conan 0.21
-                        env_build.configure("../")
+                    if hasattr(env_build, "configure"): # New conan 0.21
+                        env_build.configure("../", build=False, host=False, target=False)
                         env_build.make()
-                    except:
+                    else:
                         with tools.environment_append(env_build.vars):
                             self.run("../configure")
                             self.run("make")
