@@ -36,7 +36,8 @@ class ZlibConan(ConanFile):
             env = ConfigureEnvironment(self.deps_cpp_info, self.settings)
             env_line = env.command_line_env.replace('CFLAGS="', 'CFLAGS="-fPIC ')
             if self.settings.arch == "x86" or self.settings.arch == "x86_64":
-                env_line = env_line.replace('CFLAGS="', 'CFLAGS="-mstackrealign ')
+                if self.settings.compiler != "gcc" or self.settings.compiler.version > "4.1":
+                    env_line = env_line.replace('CFLAGS="', 'CFLAGS="-mstackrealign ')
             self.output.warn(env_line)
                         
             if self.settings.os == "Macos":
