@@ -28,6 +28,7 @@ class ZlibConan(ConanFile):
         tools.download("http://downloads.sourceforge.net/project/libpng/zlib/%s/%s" % (self.version, zip_name), zip_name)
         tools.unzip(zip_name)
         os.unlink(zip_name)
+        files.rmdir("%s/contrib" % self.ZIP_FOLDER_NAME)
         if self.settings.os != "Windows":
             self.run("chmod +x ./%s/configure" % self.ZIP_FOLDER_NAME)
 
@@ -47,8 +48,8 @@ class ZlibConan(ConanFile):
                         new_str = '-install_name $SHAREDLIBM'
                         tools.replace_in_file("../configure", old_str, new_str)
 
-                    if hasattr(env_build, "configure"): # New conan 0.21
-                        env_build.configure("../", build=False, host=False, target=False)
+                    if hasattr(env_build, "configure"):  # New conan 0.21
+                        env_build.configure("../", build=False, host=False, target=False)  # Zlib configure doesnt allow this parameters
                         env_build.make()
                     else:
                         with tools.environment_append(env_build.vars):
