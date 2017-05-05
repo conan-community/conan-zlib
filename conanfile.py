@@ -1,9 +1,7 @@
-import platform
-
-from conans import ConanFile
+from conans import ConanFile, tools, CMake, AutoToolsBuildEnvironment
+from conans.util import files
+from conans import __version__ as conan_version
 import os
-from conans.tools import download, unzip, replace_in_file
-from conans import CMake, ConfigureEnvironment
 
 
 class ZlibConan(ConanFile):
@@ -15,96 +13,88 @@ class ZlibConan(ConanFile):
     options = {"shared": [True, False]}
     default_options = "shared=False"
     exports = ["CMakeLists.txt", "FindZLIB.cmake"]
-    url="http://github.com/lasote/conan-zlib"
-    license="http://www.zlib.net/zlib_license.html"
-    description="A Massively Spiffy Yet Delicately Unobtrusive Compression Library (Also Free, Not to Mention Unencumbered by Patents)"
+    url = "http://github.com/lasote/conan-zlib"
+    license = "http://www.zlib.net/zlib_license.html"
+    description = "A Massively Spiffy Yet Delicately Unobtrusive Compression Library " \
+                  "(Also Free, Not to Mention Unencumbered by Patents)"
     
-    def config(self):
-        del self.settings.compiler.libcxx 
+    def configure(self):
+        del self.settings.compiler.libcxx
+        if conan_version < "0.20.0":
+            raise Exception("This recipe works with conan >= 0.20.0, please update your conan client version")
 
     def source(self):
         zip_name = "zlib-%s.tar.gz" % self.version
-        download("http://downloads.sourceforge.net/project/libpng/zlib/%s/%s" % (self.version, zip_name), zip_name)
-        unzip(zip_name)
+        tools.download("http://downloads.sourceforge.net/project/libpng/zlib/%s/%s" % (self.version, zip_name), zip_name)
+        tools.unzip(zip_name)
         os.unlink(zip_name)
+        files.rmdir("%s/contrib" % self.ZIP_FOLDER_NAME)
         if self.settings.os != "Windows":
             self.run("chmod +x ./%s/configure" % self.ZIP_FOLDER_NAME)
 
     def build(self):
-        """ Define your project building. You decide the way of building it
-            to reuse it later in any other project.
-        """
-        if platform.system() != "Windows":
-            env = ConfigureEnvironment(self.deps_cpp_info, self.settings)
-            env_line = env.command_line_env.replace('CFLAGS="', 'CFLAGS="-fPIC ')
-            if self.settings.arch == "x86" or self.settings.arch == "x86_64":
-                env_line = env_line.replace('CFLAGS="', 'CFLAGS="-mstackrealign ')
-            self.output.warn(env_line)
-                        
-            if self.settings.os == "Macos":
-                old_str = '-install_name $libdir/$SHAREDLIBM'
-                new_str = '-install_name $SHAREDLIBM'
-                replace_in_file("./%s/configure" % self.ZIP_FOLDER_NAME, old_str, new_str)
-                     
-            self.run("cd %s && %s ./configure" % (self.ZIP_FOLDER_NAME, env_line))
-            #self.run("cd %s && %s make check" % (self.ZIP_FOLDER_NAME, env.command_line_env))
-            self.run("cd %s && %s make" % (self.ZIP_FOLDER_NAME, env_line))
-         
-        else:
-            cmake = CMake(self.settings)
-            if self.settings.os == "Windows":
-                self.run("IF not exist _build mkdir _build")
+        with tools.chdir(self.ZIP_FOLDER_NAME):
+            if not tools.OSInfo().is_windows:
+                env_build = AutoToolsBuildEnvironment(self)
+                if self.settings.arch == "x86" or self.settings.arch == "x86_64":
+                    env_build.flags.append('-mstackrealign')
+
+                env_build.fpic = True
+
+                if self.settings.os == "Macos":
+                    old_str = '-install_name $libdir/$SHAREDLIBM'
+                    new_str = '-install_name $SHAREDLIBM'
+                    tools.replace_in_file("./configure", old_str, new_str)
+
+                if hasattr(env_build, "configure"):  # New conan 0.21
+                    env_build.configure("./", build=False, host=False, target=False)  # Zlib configure doesnt allow this parameters
+                    env_build.make()
+                else:
+                    with tools.environment_append(env_build.vars):
+                        self.run("../configure")
+                        self.run("make")
             else:
-                self.run("mkdir _build")
-            cd_build = "cd _build"
-            self.output.warn('%s && cmake .. %s' % (cd_build, cmake.command_line))
-            self.run('%s && cmake .. %s' % (cd_build, cmake.command_line))
-            self.output.warn("%s && cmake --build . %s" % (cd_build, cmake.build_config))
-            self.run("%s && cmake --build . %s" % (cd_build, cmake.build_config))
+                files.mkdir("_build")
+                with tools.chdir("_build"):
+                    cmake = CMake(self.settings)
+                    cmake.configure(self, build_dir=".")
+                    cmake.build(self, build_dir=".")
 
     def package(self):
-        """ Define your conan structure: headers, libs, bins and data. After building your
-            project, this method is called to create a defined structure:
-        """
         # Copy findZLIB.cmake to package
         self.copy("FindZLIB.cmake", ".", ".")
+
+        # Copy pc file
+        self.copy("*.pc", dst="", keep_path=False)
         
         # Copying zlib.h, zutil.h, zconf.h
-        self.copy("*.h", "include", "%s" % (self.ZIP_FOLDER_NAME), keep_path=False)
-        self.copy("*.h", "include", "%s" % ("_build"), keep_path=False)
+        self.copy("*.h", "include", "%s" % self.ZIP_FOLDER_NAME, keep_path=False)
+        self.copy("*.h", "include", "%s" % "_build", keep_path=False)
 
         # Copying static and dynamic libs
+        build_dir = os.path.join(self.ZIP_FOLDER_NAME, "_build" if tools.OSInfo().is_windows else "")
         if self.settings.os == "Windows":
             if self.options.shared:
-                self.copy(pattern="*.dll", dst="bin", src="_build", keep_path=False)
-                self.copy(pattern="*zlibd.lib", dst="lib", src="_build", keep_path=False)
-                self.copy(pattern="*zlib.lib", dst="lib", src="_build", keep_path=False)
-                self.copy(pattern="*zlib.lib", dst="lib", src="_build", keep_path=False)
-                self.copy(pattern="*zlib.dll.a", dst="lib", src="_build", keep_path=False)
+                self.copy(pattern="*.dll", dst="bin", src=build_dir, keep_path=False)
+                self.copy(pattern="*zlibd.lib", dst="lib", src=build_dir, keep_path=False)
+                self.copy(pattern="*zlib.lib", dst="lib", src=build_dir, keep_path=False)
+                self.copy(pattern="*zlib.dll.a", dst="lib", src=build_dir, keep_path=False)
             else:
-                self.copy(pattern="*zlibstaticd.*", dst="lib", src="_build", keep_path=False)
-                self.copy(pattern="*zlibstatic.*", dst="lib", src="_build", keep_path=False)
+                self.copy(pattern="*zlibstaticd.*", dst="lib", src=build_dir, keep_path=False)
+                self.copy(pattern="*zlibstatic.*", dst="lib", src=build_dir, keep_path=False)
         else:
             if self.options.shared:
                 if self.settings.os == "Macos":
-                    self.copy(pattern="*.dylib", dst="lib", keep_path=False)
+                    self.copy(pattern="*.dylib", dst="lib", src=build_dir, keep_path=False)
                 else:
-                    self.copy(pattern="*.so*", dst="lib", src=self.ZIP_FOLDER_NAME, keep_path=False)
+                    self.copy(pattern="*.so*", dst="lib", src=build_dir, keep_path=False)
             else:
-                self.copy(pattern="*.a", dst="lib", src="%s/_build" % self.ZIP_FOLDER_NAME, keep_path=False)
-                self.copy(pattern="*.a", dst="lib", src=self.ZIP_FOLDER_NAME, keep_path=False)
+                self.copy(pattern="*.a", dst="lib", src=build_dir, keep_path=False)
 
     def package_info(self):
         if self.settings.os == "Windows":
-            if self.options.shared:
-                if self.settings.build_type == "Debug" and self.settings.compiler == "Visual Studio":
-                    self.cpp_info.libs = ['zlibd']
-                else:
-                    self.cpp_info.libs = ['zlib']
-            else:
-                if self.settings.build_type == "Debug" and  self.settings.compiler == "Visual Studio":
-                    self.cpp_info.libs = ['zlibstaticd']
-                else:
-                    self.cpp_info.libs = ['zlibstatic']
+            self.cpp_info.libs = ['zlib'] if self.options.shared else ['zlibstatic']
+            if self.settings.build_type == "Debug" and self.settings.compiler == "Visual Studio":
+                self.cpp_info.libs[0] += "d"
         else:
             self.cpp_info.libs = ['z']

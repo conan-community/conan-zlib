@@ -470,7 +470,7 @@ int main(int argc, char **argv)
     done = NULL;
 
     /* get arguments -- default to the deflate literal/length code */
-    syms = 286;
+    syms = 10;
     root = 9;
     max = 15;
 
