@@ -15,7 +15,7 @@ class DefaultNameConan(ConanFile):
     version = "0.1"
     settings = "os", "compiler", "arch", "build_type"
     generators = "cmake"
-    requires = "zlib/1.2.11@%s/%s" % (username, channel)
+    requires = "zlib/1.2.8@%s/%s" % (username, channel)
 
     def build(self):
         cmake = CMake(self.settings)

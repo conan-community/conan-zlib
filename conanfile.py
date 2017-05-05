@@ -6,7 +6,7 @@ import os
 
 class ZlibConan(ConanFile):
     name = "zlib"
-    version = "1.2.11"
+    version = "1.2.8"
     ZIP_FOLDER_NAME = "zlib-%s" % version
     generators = "cmake"
     settings = "os", "arch", "compiler", "build_type"
@@ -34,29 +34,29 @@ class ZlibConan(ConanFile):
 
     def build(self):
         with tools.chdir(self.ZIP_FOLDER_NAME):
-            files.mkdir("_build")
-            with tools.chdir("_build"):
-                if not tools.OSInfo().is_windows:
-                    env_build = AutoToolsBuildEnvironment(self)
-                    if self.settings.arch == "x86" or self.settings.arch == "x86_64":
-                        env_build.flags.append('-mstackrealign')
-                    
-                    env_build.fpic = True
-    
-                    if self.settings.os == "Macos":
-                        old_str = '-install_name $libdir/$SHAREDLIBM'
-                        new_str = '-install_name $SHAREDLIBM'
-                        tools.replace_in_file("../configure", old_str, new_str)
+            if not tools.OSInfo().is_windows:
+                env_build = AutoToolsBuildEnvironment(self)
+                if self.settings.arch == "x86" or self.settings.arch == "x86_64":
+                    env_build.flags.append('-mstackrealign')
 
-                    if hasattr(env_build, "configure"):  # New conan 0.21
-                        env_build.configure("../", build=False, host=False, target=False)  # Zlib configure doesnt allow this parameters
-                        env_build.make()
-                    else:
-                        with tools.environment_append(env_build.vars):
-                            self.run("../configure")
-                            self.run("make")
+                env_build.fpic = True
+
+                if self.settings.os == "Macos":
+                    old_str = '-install_name $libdir/$SHAREDLIBM'
+                    new_str = '-install_name $SHAREDLIBM'
+                    tools.replace_in_file("./configure", old_str, new_str)
+
+                if hasattr(env_build, "configure"):  # New conan 0.21
+                    env_build.configure("./", build=False, host=False, target=False)  # Zlib configure doesnt allow this parameters
+                    env_build.make()
                 else:
-                    cmake = CMake(self.settings)                
+                    with tools.environment_append(env_build.vars):
+                        self.run("../configure")
+                        self.run("make")
+            else:
+                files.mkdir("_build")
+                with tools.chdir("_build"):
+                    cmake = CMake(self.settings)
                     cmake.configure(self, build_dir=".")
                     cmake.build(self, build_dir=".")
 
@@ -72,7 +72,7 @@ class ZlibConan(ConanFile):
         self.copy("*.h", "include", "%s" % "_build", keep_path=False)
 
         # Copying static and dynamic libs
-        build_dir = os.path.join(self.ZIP_FOLDER_NAME, "_build")
+        build_dir = os.path.join(self.ZIP_FOLDER_NAME, "_build" if tools.OSInfo().is_windows else "")
         if self.settings.os == "Windows":
             if self.options.shared:
                 self.copy(pattern="*.dll", dst="bin", src=build_dir, keep_path=False)

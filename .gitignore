@@ -4,3 +4,5 @@ activate*
 deactivate*
 conanbuild*
 test_package/build
+.idea
+
