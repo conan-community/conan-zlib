@@ -47,7 +47,8 @@ class ZlibConan(ConanFile):
                     tools.replace_in_file("./configure", old_str, new_str)
 
                 if hasattr(env_build, "configure"):  # New conan 0.21
-                    env_build.configure("./", build=False, host=False, target=False)  # Zlib configure doesnt allow this parameters
+                    # Zlib configure doesnt allow this parameters (in 1.2.8)
+                    env_build.configure("./", build=False, host=False, target=False)
                     env_build.make()
                 else:
                     with tools.environment_append(env_build.vars):
