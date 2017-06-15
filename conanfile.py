@@ -20,14 +20,14 @@ class ZlibConan(ConanFile):
     
     def configure(self):
         del self.settings.compiler.libcxx
-        if conan_version < "0.20.0":
+        if conan_version < "0.21.0":
             raise Exception("This recipe works with conan >= 0.20.0, please update your conan client version")
 
     def source(self):
-        zip_name = "zlib-%s.tar.gz" % self.version
-        tools.download("http://downloads.sourceforge.net/project/libpng/zlib/%s/%s" % (self.version, zip_name), zip_name)
-        tools.unzip(zip_name)
-        os.unlink(zip_name)
+        z_name = "zlib-%s.tar.gz" % self.version
+        tools.download("http://downloads.sourceforge.net/project/libpng/zlib/%s/%s" % (self.version, z_name), z_name)
+        tools.unzip(z_name)
+        os.unlink(z_name)
         files.rmdir("%s/contrib" % self.ZIP_FOLDER_NAME)
         if self.settings.os != "Windows":
             self.run("chmod +x ./%s/configure" % self.ZIP_FOLDER_NAME)
@@ -48,13 +48,9 @@ class ZlibConan(ConanFile):
                         new_str = '-install_name $SHAREDLIBM'
                         tools.replace_in_file("../configure", old_str, new_str)
 
-                    if hasattr(env_build, "configure"):  # New conan 0.21
-                        env_build.configure("../", build=False, host=False, target=False)  # Zlib configure doesnt allow this parameters
-                        env_build.make()
-                    else:
-                        with tools.environment_append(env_build.vars):
-                            self.run("../configure")
-                            self.run("make")
+                    # Zlib configure doesnt allow this parameters
+                    env_build.configure("../", build=False, host=False, target=False)
+                    env_build.make()
                 else:
                     cmake = CMake(self.settings)                
                     cmake.configure(self, build_dir=".")
