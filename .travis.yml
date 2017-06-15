@@ -2,7 +2,8 @@
 env:
    global:
      - CONAN_REFERENCE: "zlib/1.2.8"
-     - CONAN_USERNAME: "lasote"
+     - CONAN_USERNAME: "conan"
+     - CONAN_LOGIN_USERNAME: "lasote"
      - CONAN_CHANNEL: "testing"
      - CONAN_UPLOAD: "https://api.bintray.com/conan/lasote/conan-repo"
      - CONAN_STABLE_BRANCH_PATTERN="release/*"
