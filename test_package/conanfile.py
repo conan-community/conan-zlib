@@ -19,17 +19,14 @@ class DefaultNameConan(ConanFile):
     requires = "zlib/1.2.8@%s/%s" % (username, channel)
 
     def build(self):
-        cmake = CMake(self.settings)
-        # Current dir is "test_package/build/{build_id}" and CMakeLists.txt is in "test_package"
-        cmake.configure(self, source_dir="../../", build_dir="./")
-        cmake.build(self)
-
-        # self.run('cmake "%s" %s' % (self.conanfile_directory, cmake.command_line))
-        # self.run("cmake --build . %s" % cmake.build_config)
+        cmake = CMake(self)
+        cmake.configure(source_dir="../../", build_dir="./")
+        cmake.build()
 
     def imports(self):
         self.copy(pattern="*.dll", dst="bin", src="bin")
         self.copy(pattern="*.dylib", dst="bin", src="lib")
-        
+
     def test(self):
         self.run("cd bin && .%senough" % os.sep)
+        assert os.listdir(os.path.join(self.deps_cpp_info["zlib"].rootpath, "licenses"))
