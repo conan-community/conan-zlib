@@ -29,3 +29,4 @@ class DefaultNameConan(ConanFile):
         
     def test(self):
         self.run("cd bin && .%senough" % os.sep)
+        assert os.listdir(os.path.join(self.deps_cpp_info["zlib"].rootpath, "licenses"))

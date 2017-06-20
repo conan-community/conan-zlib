@@ -57,6 +57,15 @@ class ZlibConan(ConanFile):
                     cmake.build(self, build_dir=".")
 
     def package(self):
+        # Extract the License/s from the header to a file
+        with tools.chdir(self.ZIP_FOLDER_NAME):
+            tmp = tools.load("zlib.h")
+            license_contents = tmp[2:tmp.find("*/", 1)]
+            tools.save("LICENSE", license_contents)
+
+        # Copy the license files
+        self.copy("*license*", dst="licenses", ignore_case=True, keep_path=False)
+
         # Copy findZLIB.cmake to package
         self.copy("FindZLIB.cmake", ".", ".")
 
