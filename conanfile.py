@@ -29,6 +29,9 @@ class ZlibConan(ConanFile):
         files.rmdir("%s/contrib" % self.ZIP_FOLDER_NAME)
         if self.settings.os != "Windows":
             self.run("chmod +x ./%s/configure" % self.ZIP_FOLDER_NAME)
+            
+    def build_id(self):
+        self.info_build.settings.build_type = "Any"
 
     def build(self):
         with tools.chdir(self.ZIP_FOLDER_NAME):
@@ -44,20 +47,16 @@ class ZlibConan(ConanFile):
                     new_str = '-install_name $SHAREDLIBM'
                     tools.replace_in_file("./configure", old_str, new_str)
 
-                if hasattr(env_build, "configure"):  # New conan 0.21
-                    # Zlib configure doesnt allow this parameters (in 1.2.8)
-                    env_build.configure("./", build=False, host=False, target=False)
-                    env_build.make()
-                else:
-                    with tools.environment_append(env_build.vars):
-                        self.run("../configure")
-                        self.run("make")
+                # Zlib configure doesnt allow this parameters (in 1.2.8)
+                env_build.configure("./", build=False, host=False, target=False)
+                env_build.make()
+
             else:
                 files.mkdir("_build")
                 with tools.chdir("_build"):
-                    cmake = CMake(self.settings)
-                    cmake.configure(self, build_dir=".")
-                    cmake.build(self, build_dir=".")
+                    cmake = CMake(self)
+                    cmake.configure(build_dir=".")
+                    cmake.build(build_dir=".")
 
     def package(self):
         # Extract the License/s from the header to a file
@@ -77,17 +76,25 @@ class ZlibConan(ConanFile):
         self.copy("*.h", "include", "%s" % "_build", keep_path=False)
 
         # Copying static and dynamic libs
-        build_dir = os.path.join(self.ZIP_FOLDER_NAME, "_build" if tools.OSInfo().is_windows else "")
         if self.settings.os == "Windows":
             if self.options.shared:
+                build_dir = os.path.join(self.ZIP_FOLDER_NAME, "_build")
                 self.copy(pattern="*.dll", dst="bin", src=build_dir, keep_path=False)
+                build_dir = os.path.join(self.ZIP_FOLDER_NAME, "_build/lib")
                 self.copy(pattern="*zlibd.lib", dst="lib", src=build_dir, keep_path=False)
                 self.copy(pattern="*zlib.lib", dst="lib", src=build_dir, keep_path=False)
                 self.copy(pattern="*zlib.dll.a", dst="lib", src=build_dir, keep_path=False)
             else:
-                self.copy(pattern="*zlibstaticd.*", dst="lib", src=build_dir, keep_path=False)
-                self.copy(pattern="*zlibstatic.*", dst="lib", src=build_dir, keep_path=False)
+                build_dir = os.path.join(self.ZIP_FOLDER_NAME, "_build/lib")
+                self.copy(pattern="zlibstaticd.*", dst="lib", src=build_dir, keep_path=False)
+                self.copy(pattern="zlibstatic.*", dst="lib", src=build_dir, keep_path=False)
+                
+                lib_path = os.path.join(self.package_folder, "lib")
+                suffix = "d" if self.settings.build_type == "Debug" else ""
+                current_lib = os.path.join(lib_path, "zlibstatic%s.lib" % suffix)
+                os.rename(current_lib, os.path.join(lib_path, "zlib%s.lib" % suffix))
         else:
+            build_dir = os.path.join(self.ZIP_FOLDER_NAME)
             if self.options.shared:
                 if self.settings.os == "Macos":
                     self.copy(pattern="*.dylib", dst="lib", src=build_dir, keep_path=False)
@@ -98,7 +105,7 @@ class ZlibConan(ConanFile):
 
     def package_info(self):
         if self.settings.os == "Windows":
-            self.cpp_info.libs = ['zlib'] if self.options.shared else ['zlibstatic']
+            self.cpp_info.libs = ['zlib']
             if self.settings.build_type == "Debug" and self.settings.compiler == "Visual Studio":
                 self.cpp_info.libs[0] += "d"
         else:
