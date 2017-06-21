@@ -12,7 +12,7 @@ class ZlibConan(ConanFile):
     settings = "os", "arch", "compiler", "build_type"
     options = {"shared": [True, False]}
     default_options = "shared=False"
-    exports = ["CMakeLists.txt", "FindZLIB.cmake"]
+    exports = ["CMakeLists.txt"]
     url = "http://github.com/lasote/conan-zlib"
     license = "http://www.zlib.net/zlib_license.html"
     description = "A Massively Spiffy Yet Delicately Unobtrusive Compression Library " \
@@ -20,8 +20,6 @@ class ZlibConan(ConanFile):
     
     def configure(self):
         del self.settings.compiler.libcxx
-        if conan_version < "0.20.0":
-            raise Exception("This recipe works with conan >= 0.20.0, please update your conan client version")
 
     def source(self):
         zip_name = "zlib-%s.tar.gz" % self.version
@@ -69,10 +67,7 @@ class ZlibConan(ConanFile):
             tools.save("LICENSE", license_contents)
 
         # Copy the license files
-        self.copy("*license*", dst="licenses", ignore_case=True, keep_path=False)
-
-        # Copy findZLIB.cmake to package
-        self.copy("FindZLIB.cmake", ".", ".")
+        self.copy("LICENSE", src=self.ZIP_FOLDER_NAME, dst=".")
 
         # Copy pc file
         self.copy("*.pc", dst="", keep_path=False)
