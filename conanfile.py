@@ -31,7 +31,8 @@ class ZlibConan(ConanFile):
             self.run("chmod +x ./%s/configure" % self.ZIP_FOLDER_NAME)
             
     def build_id(self):
-        self.info_build.settings.build_type = "Any"
+        if self.settings.compiler == "Visual Studio":
+            self.info_build.settings.build_type = "Any"
 
     def build(self):
         with tools.chdir(self.ZIP_FOLDER_NAME):
@@ -41,7 +42,6 @@ class ZlibConan(ConanFile):
                     env_build.flags.append('-mstackrealign')
 
                 env_build.fpic = True
-
                 if self.settings.os == "Macos":
                     old_str = '-install_name $libdir/$SHAREDLIBM'
                     new_str = '-install_name $SHAREDLIBM'
@@ -76,7 +76,7 @@ class ZlibConan(ConanFile):
         self.copy("*.h", "include", "%s" % "_build", keep_path=False)
 
         # Copying static and dynamic libs
-        if self.settings.os == "Windows":
+        if tools.os_info.is_windows:
             if self.options.shared:
                 build_dir = os.path.join(self.ZIP_FOLDER_NAME, "_build")
                 self.copy(pattern="*.dll", dst="bin", src=build_dir, keep_path=False)
@@ -86,13 +86,21 @@ class ZlibConan(ConanFile):
                 self.copy(pattern="*zlib.dll.a", dst="lib", src=build_dir, keep_path=False)
             else:
                 build_dir = os.path.join(self.ZIP_FOLDER_NAME, "_build/lib")
-                self.copy(pattern="zlibstaticd.*", dst="lib", src=build_dir, keep_path=False)
-                self.copy(pattern="zlibstatic.*", dst="lib", src=build_dir, keep_path=False)
+                # MinGW
+                self.copy(pattern="libzlibstaticd.a", dst="lib", src=build_dir, keep_path=False)
+                self.copy(pattern="libzlibstatic.a", dst="lib", src=build_dir, keep_path=False)
+                # Visual Studio
+                self.copy(pattern="zlibstaticd.lib", dst="lib", src=build_dir, keep_path=False)
+                self.copy(pattern="zlibstatic.lib", dst="lib", src=build_dir, keep_path=False)
                 
                 lib_path = os.path.join(self.package_folder, "lib")
                 suffix = "d" if self.settings.build_type == "Debug" else ""
-                current_lib = os.path.join(lib_path, "zlibstatic%s.lib" % suffix)
-                os.rename(current_lib, os.path.join(lib_path, "zlib%s.lib" % suffix))
+                if self.settings.compiler == "Visual Studio":
+                    current_lib = os.path.join(lib_path, "zlibstatic%s.lib" % suffix)
+                    os.rename(current_lib, os.path.join(lib_path, "zlib%s.lib" % suffix))
+                elif self.settings.compiler == "gcc":
+                    current_lib = os.path.join(lib_path, "libzlibstatic.a")
+                    os.rename(current_lib, os.path.join(lib_path, "libzlib.a"))
         else:
             build_dir = os.path.join(self.ZIP_FOLDER_NAME)
             if self.options.shared:
