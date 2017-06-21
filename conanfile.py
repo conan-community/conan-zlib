@@ -30,10 +30,6 @@ class ZlibConan(ConanFile):
         if self.settings.os != "Windows":
             self.run("chmod +x ./%s/configure" % self.ZIP_FOLDER_NAME)
             
-    def build_id(self):
-        if self.settings.compiler == "Visual Studio":
-            self.info_build.settings.build_type = "Any"
-
     def build(self):
         with tools.chdir(self.ZIP_FOLDER_NAME):
             if not tools.OSInfo().is_windows:
