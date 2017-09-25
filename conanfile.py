@@ -29,6 +29,9 @@ class ZlibConan(ConanFile):
         files.rmdir("%s/contrib" % self.ZIP_FOLDER_NAME)
         if self.settings.os != "Windows":
             self.run("chmod +x ./%s/configure" % self.ZIP_FOLDER_NAME)
+        elif self.settings.compiler == "Visual Studio":
+            tools.replace_in_file("%s/zconf.h.cmakein" % self.ZIP_FOLDER_NAME, "#    include <unistd.h>", "// no unistd.h on windows")
+            tools.replace_in_file("%s/zconf.h.in" % self.ZIP_FOLDER_NAME, "#    include <unistd.h>", "// no unistd.h on windows")
             
     def build(self):
         with tools.chdir(self.ZIP_FOLDER_NAME):
