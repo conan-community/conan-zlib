@@ -17,7 +17,7 @@ class ZlibConan(ConanFile):
     license = "http://www.zlib.net/zlib_license.html"
     description = "A Massively Spiffy Yet Delicately Unobtrusive Compression Library " \
                   "(Also Free, Not to Mention Unencumbered by Patents)"
-    
+
     def configure(self):
         del self.settings.compiler.libcxx
 
@@ -29,7 +29,7 @@ class ZlibConan(ConanFile):
         files.rmdir("%s/contrib" % self.ZIP_FOLDER_NAME)
         if self.settings.os != "Windows":
             self.run("chmod +x ./%s/configure" % self.ZIP_FOLDER_NAME)
-            
+
     def build(self):
         with tools.chdir(self.ZIP_FOLDER_NAME):
             files.mkdir("_build")
@@ -38,9 +38,9 @@ class ZlibConan(ConanFile):
                     env_build = AutoToolsBuildEnvironment(self)
                     if self.settings.arch in ["x86", "x86_64"] and self.settings.compiler in ["apple-clang", "clang", "gcc"]:
                         env_build.flags.append('-mstackrealign')
-                    
+
                     env_build.fpic = True
-    
+
                     if self.settings.os == "Macos":
                         old_str = '-install_name $libdir/$SHAREDLIBM'
                         new_str = '-install_name $SHAREDLIBM'
@@ -50,13 +50,13 @@ class ZlibConan(ConanFile):
                     env_build.configure("../", build=False, host=False, target=False)
                     env_build.make()
                 else:
-                    cmake = CMake(self)                
+                    cmake = CMake(self)
                     cmake.configure(build_dir=".")
                     cmake.build(build_dir=".")
 
     def package(self):
         # Extract the License/s from the header to a file
-        with tools.chdir(self.ZIP_FOLDER_NAME):
+        with tools.chdir(os.path.join(self.build_folder, self.ZIP_FOLDER_NAME)):
             tmp = tools.load("zlib.h")
             license_contents = tmp[2:tmp.find("*/", 1)]
             tools.save("LICENSE", license_contents)
@@ -66,7 +66,6 @@ class ZlibConan(ConanFile):
 
         # Copy pc file
         self.copy("*.pc", dst="", keep_path=False)
-        
         # Copying zlib.h, zutil.h, zconf.h
         self.copy("*.h", "include", "%s" % self.ZIP_FOLDER_NAME, keep_path=False)
         self.copy("*.h", "include", "%s" % "_build", keep_path=False)
@@ -89,7 +88,7 @@ class ZlibConan(ConanFile):
                 # Visual Studio
                 self.copy(pattern="zlibstaticd.lib", dst="lib", src=build_dir, keep_path=False)
                 self.copy(pattern="zlibstatic.lib", dst="lib", src=build_dir, keep_path=False)
-                
+
                 lib_path = os.path.join(self.package_folder, "lib")
                 suffix = "d" if self.settings.build_type == "Debug" else ""
                 if self.settings.compiler == "Visual Studio":
