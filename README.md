@@ -2,7 +2,6 @@
 [![Build Status](https://ci.appveyor.com/api/projects/status/github/lasote/conan-zlib)](https://ci.appveyor.com/project/lasote/conan-zlib)
 
 
-
 # conan-zlib
 
 ![conan_zlib_small](https://user-images.githubusercontent.com/3807515/27144498-6c28216a-5132-11e7-8071-22a701c95fa4.png)
