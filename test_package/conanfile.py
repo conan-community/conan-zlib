@@ -20,7 +20,7 @@ class DefaultNameConan(ConanFile):
 
     def build(self):
         cmake = CMake(self)
-        cmake.configure(source_dir="../../", build_dir="./")
+        cmake.configure()
         cmake.build()
 
     def imports(self):
