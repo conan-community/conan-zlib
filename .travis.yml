@@ -7,7 +7,6 @@ env:
      - CONAN_UPLOAD: "https://api.bintray.com/conan/conan-community/conan"
      - CONAN_STABLE_BRANCH_PATTERN: "release/*"
      - CONAN_UPLOAD_ONLY_WHEN_STABLE: 1 # Will only upload when the branch matches "release/*"
-     - CONAN_PIP_PACKAGE: "conan==1.0.0-beta.2"
 
 linux: &linux
    os: linux
