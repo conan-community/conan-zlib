@@ -1,6 +1,6 @@
-from conans.model.conan_file import ConanFile
+from conans.model.conan_file import ConanFile, tools
 from conans import CMake
-import os
+import os, platform
 
 ############### CONFIGURE THESE VALUES ##################
 default_user = "lasote"
@@ -19,7 +19,9 @@ class DefaultNameConan(ConanFile):
     requires = "zlib/1.2.11@%s/%s" % (username, channel)
 
     def build(self):
-        cmake = CMake(self)
+        # Compatibility with Conan < 1.0 (#2234)
+        generator = "Unix Makefiles" if platform.system() != "Windows" else None 
+        cmake = CMake(self, generator=generator)
         cmake.configure()
         cmake.build()
 
@@ -28,5 +30,6 @@ class DefaultNameConan(ConanFile):
         self.copy(pattern="*.dylib", dst="bin", src="lib")
         
     def test(self):
-        self.run("cd bin && .%senough" % os.sep)
-        assert os.path.exists(os.path.join(self.deps_cpp_info["zlib"].rootpath, "LICENSE"))
+        if not tools.cross_building(self.settings):
+            self.run("cd bin && .%senough" % os.sep)
+            assert os.path.exists(os.path.join(self.deps_cpp_info["zlib"].rootpath, "LICENSE"))
