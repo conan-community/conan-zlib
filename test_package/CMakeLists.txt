@@ -2,14 +2,7 @@ PROJECT(MyHello)
 cmake_minimum_required(VERSION 2.8)
 
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-CONAN_BASIC_SETUP()
+CONAN_BASIC_SETUP(TARGETS)
 
-find_package("ZLIB")
-
-IF(ZLIB_FOUND)
-    ADD_EXECUTABLE(enough enough.c)
-    include_directories(${ZLIB_INCLUDE_DIRS})
-    TARGET_LINK_LIBRARIES(enough ${ZLIB_LIBRARIES})
-ELSE()
-    MESSAGE(FATAL_ERROR "Zlib not found")
-ENDIF()
+add_executable(enough enough.c)
+target_link_libraries(enough CONAN_PKG::zlib)

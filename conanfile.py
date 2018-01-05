@@ -45,8 +45,7 @@ class ZlibConan(ConanFile):
                         old_str = '-install_name $libdir/$SHAREDLIBM'
                         new_str = '-install_name $SHAREDLIBM'
                         tools.replace_in_file("../configure", old_str, new_str)
-
-                    # Zlib configure doesnt allow this parameters
+                    # Zlib configure doesnt allow this parameter
                     env_build.configure("../", build=False, host=False, target=False)
                     env_build.make()
                 else:
