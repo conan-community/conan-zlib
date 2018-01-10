@@ -20,5 +20,5 @@ if [[ "$(uname -s)" == 'Darwin' ]]; then
 fi
 
 pip install conan_package_tools
-pip install conan==1.0.0-beta.2
+pip install conan==1.0.0-beta.5
 conan user
