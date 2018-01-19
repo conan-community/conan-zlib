@@ -74,7 +74,7 @@ class ZlibConan(ConanFile):
 
         # Copying static and dynamic libs
         build_dir = os.path.join(self.ZIP_FOLDER_NAME, "_build")
-        if tools.os_info.is_windows:
+        if self.settings.os == "Windows":
             if self.options.shared:
                 build_dir = os.path.join(self.ZIP_FOLDER_NAME, "_build")
                 self.copy(pattern="*.dll", dst="bin", src=build_dir, keep_path=False)
@@ -84,12 +84,13 @@ class ZlibConan(ConanFile):
                 self.copy(pattern="*zlib.dll.a", dst="lib", src=build_dir, keep_path=False)
             else:
                 build_dir = os.path.join(self.ZIP_FOLDER_NAME, "_build/lib")
-                # MinGW
-                self.copy(pattern="libzlibstaticd.a", dst="lib", src=build_dir, keep_path=False)
-                self.copy(pattern="libzlibstatic.a", dst="lib", src=build_dir, keep_path=False)
-                # Visual Studio
-                self.copy(pattern="zlibstaticd.lib", dst="lib", src=build_dir, keep_path=False)
-                self.copy(pattern="zlibstatic.lib", dst="lib", src=build_dir, keep_path=False)
+                if self.settings.os == "Windows":
+                    # MinGW
+                    self.copy(pattern="libzlibstaticd.a", dst="lib", src=build_dir, keep_path=False)
+                    self.copy(pattern="libzlibstatic.a", dst="lib", src=build_dir, keep_path=False)
+                    # Visual Studio
+                    self.copy(pattern="zlibstaticd.lib", dst="lib", src=build_dir, keep_path=False)
+                    self.copy(pattern="zlibstatic.lib", dst="lib", src=build_dir, keep_path=False)
 
                 lib_path = os.path.join(self.package_folder, "lib")
                 suffix = "d" if self.settings.build_type == "Debug" else ""
