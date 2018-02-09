@@ -82,6 +82,8 @@ class ZlibConan(ConanFile):
                 self.copy(pattern="*zlibd.lib", dst="lib", src=build_dir, keep_path=False)
                 self.copy(pattern="*zlib.lib", dst="lib", src=build_dir, keep_path=False)
                 self.copy(pattern="*zlib.dll.a", dst="lib", src=build_dir, keep_path=False)
+                # Visual Studio debug symbols
+                self.copy(pattern="**/zlib*.pdb", dst="bin", src="", keep_path=False)
             else:
                 build_dir = os.path.join(self.ZIP_FOLDER_NAME, "_build/lib")
                 if self.settings.os == "Windows":
@@ -91,6 +93,8 @@ class ZlibConan(ConanFile):
                     # Visual Studio
                     self.copy(pattern="zlibstaticd.lib", dst="lib", src=build_dir, keep_path=False)
                     self.copy(pattern="zlibstatic.lib", dst="lib", src=build_dir, keep_path=False)
+                    # Visual Studio debug symbols
+                    self.copy("**/zlibstatic*.pdb", dst="lib", src="", keep_path=False)
 
                 lib_path = os.path.join(self.package_folder, "lib")
                 suffix = "d" if self.settings.build_type == "Debug" else ""
