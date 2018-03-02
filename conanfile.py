@@ -23,7 +23,7 @@ class ZlibConan(ConanFile):
 
     def source(self):
         z_name = "zlib-%s.tar.gz" % self.version
-        tools.download("http://downloads.sourceforge.net/project/libpng/zlib/%s/%s" % (self.version, z_name), z_name)
+        tools.download("https://zlib.net/zlib-%s.tar.gz" % self.version, z_name)
         tools.unzip(z_name)
         os.unlink(z_name)
         files.rmdir("%s/contrib" % self.ZIP_FOLDER_NAME)
@@ -31,7 +31,7 @@ class ZlibConan(ConanFile):
             self.run("chmod +x ./%s/configure" % self.ZIP_FOLDER_NAME)
 
     def build(self):
-        with tools.chdir(self.ZIP_FOLDER_NAME):
+        with tools.chdir(os.path.join(self.source_folder, self.ZIP_FOLDER_NAME)):
             files.mkdir("_build")
             with tools.chdir("_build"):
                 if not tools.os_info.is_windows:
@@ -57,8 +57,10 @@ class ZlibConan(ConanFile):
                     cmake.build(build_dir=".")
 
     def package(self):
+        self.output.warn("local cache: %s" % self.in_local_cache)
+        self.output.warn("develop: %s" % self.develop)
         # Extract the License/s from the header to a file
-        with tools.chdir(os.path.join(self.build_folder, self.ZIP_FOLDER_NAME)):
+        with tools.chdir(os.path.join(self.source_folder, self.ZIP_FOLDER_NAME)):
             tmp = tools.load("zlib.h")
             license_contents = tmp[2:tmp.find("*/", 1)]
             tools.save("LICENSE", license_contents)
