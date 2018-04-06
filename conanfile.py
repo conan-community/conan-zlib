@@ -26,8 +26,6 @@ class ZlibConan(ConanFile):
         tools.unzip(z_name)
         os.unlink(z_name)
         files.rmdir("%s/contrib" % self.ZIP_FOLDER_NAME)
-        # if self.settings.os != "Windows":
-        ### self.run("chmod +x ./%s/configure" % self.ZIP_FOLDER_NAME)
 
     def build(self):
         with tools.chdir(os.path.join(self.source_folder, self.ZIP_FOLDER_NAME)):
@@ -38,10 +36,10 @@ class ZlibConan(ConanFile):
                     definitions = {
                         "BUILD_SHARED_LIBS": "ON"
                     }
-                    cmake.configure(defs=definitions, build_dir=".")
+                    cmake.configure(defs=definitions)
                 else:
-                    cmake.configure(build_dir=".")
-                cmake.build(build_dir=".")
+                    cmake.configure()
+                cmake.build()
                 cmake.install()
 
     def package(self):
@@ -56,17 +54,13 @@ class ZlibConan(ConanFile):
         # Copy the license files
         self.copy("LICENSE", src=self.ZIP_FOLDER_NAME, dst=".")
 
-        # NOTE: done by cmake.install()
-        # Copy pc file
-        ### self.copy("*.pc", dst="", keep_path=False)
-        # Copying zlib.h, zutil.h, zconf.h
-        ### self.copy("*.h", "include", "%s" % self.ZIP_FOLDER_NAME, keep_path=False)
-        ### self.copy("*.h", "include", "%s" % "_build", keep_path=False)
+        # NOTE: other files are installed with cmake.install()
 
     def package_info(self):
         if self.settings.os == "Windows":
             self.cpp_info.libs = ['zlib']
-            if self.settings.build_type == "Debug" and self.settings.compiler == "Visual Studio":
-                self.cpp_info.libs[0] += "d"
+            # TBD: IMHO unwanted with conan!
+            # if self.settings.build_type == "Debug" and self.settings.compiler == "Visual Studio":
+            #     self.cpp_info.libs[0] += "d"
         else:
             self.cpp_info.libs = ['z']
