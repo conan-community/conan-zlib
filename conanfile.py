@@ -11,7 +11,7 @@ class ZlibConan(ConanFile):
     settings = "os", "arch", "compiler", "build_type"
     options = {"shared": [True, False]}
     default_options = "shared=False"
-    exports_sources = ["CMakeLists.txt"]
+    exports_sources = ["CMakeLists.txt", "CMakeLists.patch"]
     url = "http://github.com/lasote/conan-zlib"
     license = "http://www.zlib.net/zlib_license.html"
     description = "A Massively Spiffy Yet Delicately Unobtrusive Compression Library " \
@@ -37,12 +37,9 @@ class ZlibConan(ConanFile):
                                   '#if defined(_WIN32) && !defined(__CYGWIN__)')
             self.output.warn("conan: patch %s/CMakeLists.txt" %
                              self.ZIP_FOLDER_NAME)
-            # Note: prevent build of SHARED lib too! CK
-            tools.replace_in_file(
-                "CMakeLists.txt", 'add_library(zlib SHARED', 'add_library(zlib')
-            # Note: prevent use of win32/zlib1.rc under MSYS! CK
-            tools.replace_in_file(
-                "CMakeLists.txt", 'if(NOT MINGW)', 'if(MINGW)')
+            # Note: build either SHARED or STATIC zlib! CK
+            # prevent use of win32/zlib1.rc under MSYS too
+            tools.patch(patch_file="../CMakeLists.patch")
 
             files.mkdir("_build")
             with tools.chdir("_build"):

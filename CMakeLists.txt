@@ -15,5 +15,8 @@ option(BUILD_SHARED_LIBS "Build shared libraries(DLLs)." OFF)
 # The zlib CMakeFile.txt is a nightmare! CK
 set(CMAKE_LEGACY_CYGWIN_WIN32 0) # Remove when CMake >= 2.8.4 is required
 
+# on project level needed! CK
+enable_testing()
+
 include_directories(${CMAKE_SOURCE_DIR}/zlib-1.2.11)
 add_subdirectory("./zlib-1.2.11")
