@@ -10,7 +10,7 @@ conan_basic_setup(TARGETS)
 option(BUILD_SHARED_LIBS "Build shared libraries(DLLs)." OFF)
 
 # disable unwanted debug postfix 'd'
-set(CMAKE_DEBUG_POSTFIX "" CACHE STRING "Not useful with conan, should be empty!" FORCE)
+### set(CMAKE_DEBUG_POSTFIX "" CACHE STRING "Not useful with conan, should be empty!" FORCE)
 
 # The zlib CMakeFile.txt is a nightmare! CK
 set(CMAKE_LEGACY_CYGWIN_WIN32 0) # Remove when CMake >= 2.8.4 is required

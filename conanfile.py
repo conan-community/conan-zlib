@@ -55,8 +55,9 @@ class ZlibConan(ConanFile):
                 else:
                     cmake.configure()
                 cmake.build()
-                if not tools.cross_building(self.settings):
-                    cmake.test()
+                # # TBD: may be added later? CK
+                # if not tools.cross_building(self.settings):
+                #     cmake.test()
                 cmake.install()
 
     def package(self):
@@ -74,10 +75,10 @@ class ZlibConan(ConanFile):
         # NOTE: other files are installed with cmake.install()
 
     def package_info(self):
-        if self.settings.os == "Windows":
+        if self.settings.os == "Windows" and self.settings.compiler == "Visual Studio":
             self.cpp_info.libs = ['zlib']
-            # TBD: IMHO unwanted with conan!
-            # if self.settings.build_type == "Debug" and self.settings.compiler == "Visual Studio":
-            #     self.cpp_info.libs[0] += "d"
+            # IMHO: unwanted with conan! CK
+            if self.settings.build_type == "Debug" and self.settings.compiler == "Visual Studio":
+                self.cpp_info.libs[0] += "d"
         else:
             self.cpp_info.libs = ['z']
