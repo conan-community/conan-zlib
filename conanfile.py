@@ -1,4 +1,4 @@
-from conans import ConanFile, tools, CMake, AutoToolsBuildEnvironment
+from conans import ConanFile, tools, CMake
 from conans.util import files
 import os
 
@@ -22,13 +22,28 @@ class ZlibConan(ConanFile):
 
     def source(self):
         z_name = "zlib-%s.tar.gz" % self.version
-        tools.download("https://zlib.net/zlib-%s.tar.gz" % self.version, z_name)
+        tools.download("https://zlib.net/zlib-%s.tar.gz" %
+                       self.version, z_name)
         tools.unzip(z_name)
         os.unlink(z_name)
         files.rmdir("%s/contrib" % self.ZIP_FOLDER_NAME)
 
     def build(self):
         with tools.chdir(os.path.join(self.source_folder, self.ZIP_FOLDER_NAME)):
+            # prevent '#define WIDECHAR' under MSYS
+            # Note: MSYS is based on CYGWIN! CK
+            self.output.warn("conan: patch %s/gzguts.h" % self.ZIP_FOLDER_NAME)
+            tools.replace_in_file("gzguts.h", '#if defined(_WIN32) || defined(__CYGWIN__)',
+                                  '#if defined(_WIN32) && !defined(__CYGWIN__)')
+            self.output.warn("conan: patch %s/CMakeLists.txt" %
+                             self.ZIP_FOLDER_NAME)
+            # Note: prevent build of SHARED lib too! CK
+            tools.replace_in_file(
+                "CMakeLists.txt", 'add_library(zlib SHARED', 'add_library(zlib')
+            # Note: prevent use of win32/zlib1.rc under MSYS! CK
+            tools.replace_in_file(
+                "CMakeLists.txt", 'if(NOT MINGW)', 'if(MINGW)')
+
             files.mkdir("_build")
             with tools.chdir("_build"):
                 cmake = CMake(self)
@@ -40,6 +55,8 @@ class ZlibConan(ConanFile):
                 else:
                     cmake.configure()
                 cmake.build()
+                if not tools.cross_building(self.settings):
+                    cmake.test()
                 cmake.install()
 
     def package(self):
