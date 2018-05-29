@@ -20,7 +20,7 @@ If you handle multiple dependencies in your project is better to add a *conanfil
     zlib/1.2.11@conan/stable
 
     [options]
-    zlib:shared=true # false
+    zlib:shared=True # False
     
     [generators]
     cmake
