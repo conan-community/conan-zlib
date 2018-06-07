@@ -22,6 +22,6 @@ class DefaultNameConan(ConanFile):
         
     def test(self):
         if not tools.cross_building(self.settings):
-            self.run("cd bin && .%senough" % os.sep)
+            self.run("cd bin && .%stest" % os.sep)
         assert os.path.exists(os.path.join(self.deps_cpp_info["zlib"].rootpath, "LICENSE"))
 
