@@ -26,7 +26,7 @@ class ZlibConan(ConanFile):
         tools.unzip(z_name)
         os.unlink(z_name)
         files.rmdir("%s/contrib" % self.ZIP_FOLDER_NAME)
-        if self.settings.os != "Windows":
+        if not tools.os_info.is_windows:
             self.run("chmod +x ./%s/configure" % self.ZIP_FOLDER_NAME)
 
     def build(self):
