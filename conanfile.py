@@ -99,8 +99,9 @@ class ZlibConan(ConanFile):
                     current_lib = os.path.join(lib_path, "zlibstatic%s.lib" % suffix)
                     os.rename(current_lib, os.path.join(lib_path, "zlib%s.lib" % suffix))
                 elif self.settings.compiler == "gcc":
-                    current_lib = os.path.join(lib_path, "libzlibstatic.a")
-                    os.rename(current_lib, os.path.join(lib_path, "libzlib.a"))
+                    if not tools.os_info.is_linux:
+                        current_lib = os.path.join(lib_path, "libzlibstatic.a")
+                        os.rename(current_lib, os.path.join(lib_path, "libzlib.a"))
         else:
             if self.options.shared:
                 if self.settings.os == "Macos":
@@ -111,7 +112,7 @@ class ZlibConan(ConanFile):
                 self.copy(pattern="*.a", dst="lib", src=build_dir, keep_path=False)
 
     def package_info(self):
-        if self.settings.os == "Windows":
+        if self.settings.os == "Windows" and not tools.os_info.is_linux:
             self.cpp_info.libs = ['zlib']
             if self.settings.build_type == "Debug" and self.settings.compiler == "Visual Studio":
                 self.cpp_info.libs[0] += "d"
