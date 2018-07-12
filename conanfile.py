@@ -48,8 +48,17 @@ class ZlibConan(ConanFile):
                     if self.settings.os == "Windows":  # Cross building to Linux
                         tools.replace_in_file("../configure", 'LDSHAREDLIBC="${LDSHAREDLIBC--lc}"', 'LDSHAREDLIBC=""')
                     # Zlib configure doesnt allow this parameters
-                    env_build.configure("../", build=False, host=False, target=False)
-                    env_build.make()
+                    if self.settings.os == "Windows" and tools.os_info.is_linux:
+                        # Let our profile to declare what is needed.
+                        tools.replace_in_file("../win32/Makefile.gcc", 'LDFLAGS = $(LOC)', '')
+                        tools.replace_in_file("../win32/Makefile.gcc", 'AS = $(CC)', '')
+                        tools.replace_in_file("../win32/Makefile.gcc", 'AR = $(PREFIX)ar', '')
+                        tools.replace_in_file("../win32/Makefile.gcc", 'CC = $(PREFIX)gcc', '')
+                        tools.replace_in_file("../win32/Makefile.gcc", 'RC = $(PREFIX)windres', '')
+                        self.run("cd .. && make -f win32/Makefile.gcc")
+                    else:
+                        env_build.configure("../", build=False, host=False, target=False)
+                        env_build.make()
                 else:
                     cmake = CMake(self)
                     cmake.configure(build_dir=".")
@@ -83,16 +92,20 @@ class ZlibConan(ConanFile):
                 self.copy(pattern="*zlibd.lib", dst="lib", src=build_dir, keep_path=False)
                 self.copy(pattern="*zlib.lib", dst="lib", src=build_dir, keep_path=False)
                 self.copy(pattern="*zlib.dll.a", dst="lib", src=build_dir, keep_path=False)
+                if tools.os_info.is_linux:
+                    self.copy(pattern="*libz.dll.a", dst="lib", src=self.ZIP_FOLDER_NAME)
             else:
                 build_dir = os.path.join(self.ZIP_FOLDER_NAME, "_build/lib")
                 if self.settings.os == "Windows":
-                    # MinGW
-                    self.copy(pattern="libzlibstaticd.a", dst="lib", src=build_dir, keep_path=False)
-                    self.copy(pattern="libzlibstatic.a", dst="lib", src=build_dir, keep_path=False)
-                    # Visual Studio
-                    self.copy(pattern="zlibstaticd.lib", dst="lib", src=build_dir, keep_path=False)
-                    self.copy(pattern="zlibstatic.lib", dst="lib", src=build_dir, keep_path=False)
-
+                    if tools.os_info.is_windows:
+                        # MinGW
+                        self.copy(pattern="libzlibstaticd.a", dst="lib", src=build_dir, keep_path=False)
+                        self.copy(pattern="libzlibstatic.a", dst="lib", src=build_dir, keep_path=False)
+                        # Visual Studio
+                        self.copy(pattern="zlibstaticd.lib", dst="lib", src=build_dir, keep_path=False)
+                        self.copy(pattern="zlibstatic.lib", dst="lib", src=build_dir, keep_path=False)
+                    if tools.os_info.is_linux:
+                        self.copy(pattern="libz.a", dst="lib", src=self.ZIP_FOLDER_NAME, keep_path=False)
                 lib_path = os.path.join(self.package_folder, "lib")
                 suffix = "d" if self.settings.build_type == "Debug" else ""
                 if self.settings.compiler == "Visual Studio":
