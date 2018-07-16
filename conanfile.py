@@ -91,6 +91,8 @@ class ZlibConan(ConanFile):
 
         # Copying static and dynamic libs
         build_dir = os.path.join(self.ZIP_FOLDER_NAME, "_build")
+        lib_path = os.path.join(self.package_folder, "lib")
+        suffix = "d" if self.settings.build_type == "Debug" else ""
         if self.settings.os == "Windows":
             if self.options.shared:
                 build_dir = os.path.join(self.ZIP_FOLDER_NAME, "_build")
@@ -101,6 +103,9 @@ class ZlibConan(ConanFile):
                 self.copy(pattern="*zlib.dll.a", dst="lib", src=build_dir, keep_path=False)
                 if tools.os_info.is_linux:
                     self.copy(pattern="*libz.dll.a", dst="lib", src=self.ZIP_FOLDER_NAME)
+                if self.settings.compiler == "Visual Studio":
+                    current_lib = os.path.join(lib_path, "zlib%s.lib" % suffix)
+                    os.rename(current_lib, os.path.join(lib_path, "zlib.lib"))
             else:
                 build_dir = os.path.join(self.ZIP_FOLDER_NAME, "_build/lib")
                 if self.settings.os == "Windows":
@@ -113,11 +118,9 @@ class ZlibConan(ConanFile):
                         self.copy(pattern="zlibstatic.lib", dst="lib", src=build_dir, keep_path=False)
                     if tools.os_info.is_linux:
                         self.copy(pattern="libz.a", dst="lib", src=self.ZIP_FOLDER_NAME, keep_path=False)
-                lib_path = os.path.join(self.package_folder, "lib")
-                suffix = "d" if self.settings.build_type == "Debug" else ""
                 if self.settings.compiler == "Visual Studio":
                     current_lib = os.path.join(lib_path, "zlibstatic%s.lib" % suffix)
-                    os.rename(current_lib, os.path.join(lib_path, "zlib%s.lib" % suffix))
+                    os.rename(current_lib, os.path.join(lib_path, "zlib.lib"))
                 elif self.settings.compiler == "gcc":
                     if not tools.os_info.is_linux:
                         current_lib = os.path.join(lib_path, "libzlibstatic.a")
@@ -134,7 +137,5 @@ class ZlibConan(ConanFile):
     def package_info(self):
         if self.settings.os == "Windows" and not tools.os_info.is_linux:
             self.cpp_info.libs = ['zlib']
-            if self.settings.build_type == "Debug" and self.settings.compiler == "Visual Studio":
-                self.cpp_info.libs[0] += "d"
         else:
             self.cpp_info.libs = ['z']
