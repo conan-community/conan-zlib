@@ -87,7 +87,7 @@ class ZlibConan(ConanFile):
         self.copy("*.pc", dst="", keep_path=False)
 
         # Copy headers
-        for header in ["zlib.h", "zconf.h"]:
+        for header in ["zlib.h", "_build/zconf.h"]:
             self.copy(header, "include", "%s" % self.ZIP_FOLDER_NAME, keep_path=False)
             self.copy(header, "include", "%s" % "_build", keep_path=False)
 
