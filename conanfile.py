@@ -55,6 +55,10 @@ class ZlibConan(ConanFile):
                     if self.settings.os == "Windows":  # Cross building to Linux
                         tools.replace_in_file("../configure", 'LDSHAREDLIBC="${LDSHAREDLIBC--lc}"', 'LDSHAREDLIBC=""')
                     # Zlib configure doesnt allow this parameters
+
+                    if self.settings.os == "iOS":
+                        tools.replace_in_file("../gzguts.h", '#ifdef _LARGEFILE64_SOURCE', '#include <unistd.h>\n\n#ifdef _LARGEFILE64_SOURCE')
+
                     if self.settings.os == "Windows" and tools.os_info.is_linux:
                         # Let our profile to declare what is needed.
                         tools.replace_in_file("../win32/Makefile.gcc", 'LDFLAGS = $(LOC)', '')
