@@ -21,9 +21,9 @@ int main(void) {
     deflate(&defstream, Z_FINISH);
     deflateEnd(&defstream);
 
-    printf("Compressed size is: %lu\n", strlen(buffer_in));
+    printf("Compressed size is: %zu\n", strlen(buffer_in));
     printf("Compressed string is: %s\n", buffer_in);
-    printf("Compressed size is: %lu\n", strlen(buffer_out));
+    printf("Compressed size is: %zu\n", strlen(buffer_out));
     printf("Compressed string is: %s\n", buffer_out);
 
     printf("ZLIB VERSION: %s\n", zlibVersion());

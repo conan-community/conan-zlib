@@ -54,7 +54,7 @@ class ZlibConan(ConanFile):
                     new_str = '-install_name $SHAREDLIBM'
                     tools.replace_in_file("configure", old_str, new_str)
 
-                env_build.configure()
+                env_build.configure(build=False, host=False, target=False)
                 env_build.make()
         else:
             cmake = CMake(self)
