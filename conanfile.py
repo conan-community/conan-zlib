@@ -1,97 +1,107 @@
-from conans import ConanFile
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import os
-from conans.tools import download, unzip, replace_in_file
-from conans import CMake, ConfigureEnvironment
+import stat
+from conans import ConanFile, tools, CMake, AutoToolsBuildEnvironment
 
 
 class ZlibConan(ConanFile):
     name = "zlib"
     version = "1.2.9"
-    ZIP_FOLDER_NAME = "zlib-%s" % version
-    generators = "cmake"
+    url = "http://github.com/conan-community/conan-zlib"
+    homepage = "https://zlib.net"
+    author = "Conan Community"
+    license = "Zlib"
+    description = ("A Massively Spiffy Yet Delicately Unobtrusive Compression Library "
+                  "(Also Free, Not to Mention Unencumbered by Patents)")
     settings = "os", "arch", "compiler", "build_type"
-    options = {"shared": [True, False]}
-    default_options = "shared=False"
-    exports = ["CMakeLists.txt", "FindZLIB.cmake"]
-    url="http://github.com/lasote/conan-zlib"
-    license="http://www.zlib.net/zlib_license.html"
-    description="A Massively Spiffy Yet Delicately Unobtrusive Compression Library (Also Free, Not to Mention Unencumbered by Patents)"
+    options = {"shared": [True, False], "fPIC": [True, False]}
+    default_options = {"shared": False, "fPIC": True}
+    exports = "LICENSE"
+    exports_sources = ["CMakeLists.txt", "FindZLIB.cmake"]
+    generators = "cmake"
+    _source_subfolder = "source_subfolder"
+    _build_subfolder = "build_subfolder"
+
+    def config_options(self):
+        if self.settings.os == "Windows":
+            del self.options.fPIC
     
     def config(self):
         del self.settings.compiler.libcxx 
 
     def source(self):
-        zip_name = "zlib-%s.tar.gz" % self.version
-        download("http://downloads.sourceforge.net/project/libpng/zlib/%s/%s" % (self.version, zip_name), zip_name)
-        unzip(zip_name)
-        os.unlink(zip_name)
+        tools.get("http://downloads.sourceforge.net/project/libpng/{}/{}/{}-{}.tar.gz".format(self.name, self.version, self.name, self.version))
+        os.rename("{}-{}".format(self.name, self.version), self._source_subfolder)
+        tools.rmdir(os.path.join(self._source_subfolder, "contrib"))
         if self.settings.os != "Windows":
-            self.run("chmod +x ./%s/configure" % self.ZIP_FOLDER_NAME)
+            configure_file = os.path.join(self._source_subfolder, "configure")
+            st = os.stat(configure_file)
+            os.chmod(configure_file, st.st_mode | stat.S_IEXEC)
 
     def build(self):
         """ Define your project building. You decide the way of building it
             to reuse it later in any other project.
         """
-        if self.settings.os == "Linux" or self.settings.os == "Macos":
-            env = ConfigureEnvironment(self.deps_cpp_info, self.settings)
-            env_line = env.command_line_env.replace('CFLAGS="', 'CFLAGS="-fPIC ')
-            if self.settings.arch == "x86" or self.settings.arch == "x86_64":
-                if self.settings.compiler != "gcc" or self.settings.compiler.version > "4.1":
-                    env_line = env_line.replace('CFLAGS="', 'CFLAGS="-mstackrealign ')
-            self.output.warn(env_line)
-                        
-            if self.settings.os == "Macos":
-                old_str = '-install_name $libdir/$SHAREDLIBM'
-                new_str = '-install_name $SHAREDLIBM'
-                replace_in_file("./%s/configure" % self.ZIP_FOLDER_NAME, old_str, new_str)
-                     
-            self.run("cd %s && %s ./configure" % (self.ZIP_FOLDER_NAME, env_line))
-            #self.run("cd %s && %s make check" % (self.ZIP_FOLDER_NAME, env.command_line_env))
-            self.run("cd %s && %s make" % (self.ZIP_FOLDER_NAME, env_line))
-         
-        else:
-            cmake = CMake(self.settings)
-            if self.settings.os == "Windows":
-                self.run("IF not exist _build mkdir _build")
+        with tools.chdir(self._source_subfolder):
+            if self.settings.os != "Windows":
+                env_build = AutoToolsBuildEnvironment(self)
+                if self.settings.arch == "x86" or self.settings.arch == "x86_64":
+                    env_build.flags.append('-mstackrealign')
+
+                if self.settings.os == "Macos":
+                    old_str = '-install_name $libdir/$SHAREDLIBM'
+                    new_str = '-install_name $SHAREDLIBM'
+                    tools.replace_in_file("./configure" % self._source_subfolder, old_str, new_str)
+
+                env_build.configure("./")
+                env_build.make()
             else:
-                self.run("mkdir _build")
-            cd_build = "cd _build"
-            self.output.warn('%s && cmake .. %s' % (cd_build, cmake.command_line))
-            self.run('%s && cmake .. %s' % (cd_build, cmake.command_line))
-            self.output.warn("%s && cmake --build . %s" % (cd_build, cmake.build_config))
-            self.run("%s && cmake --build . %s" % (cd_build, cmake.build_config))
+                cmake = CMake(self.settings)
+                tools.mkdir(self._build_subfolder)
+                with tools.chdir(self._build_subfolder):
+                    cmake = CMake(self)
+                    cmake.configure(build_dir=".")
+                    cmake.build(build_dir=".")
 
     def package(self):
         """ Define your conan structure: headers, libs, bins and data. After building your
             project, this method is called to create a defined structure:
         """
+        with tools.chdir(self._source_subfolder):
+            tmp = tools.load("zlib.h")
+            license_contents = tmp[2:tmp.find("*/", 1)]
+            tools.save("LICENSE", license_contents)
+
+        self.copy("LICENSE", dst="licenses", src=self._source_subfolder)
+
         # Copy findZLIB.cmake to package
         self.copy("FindZLIB.cmake", ".", ".")
         
         # Copying zlib.h, zutil.h, zconf.h
-        self.copy("*.h", "include", "%s" % (self.ZIP_FOLDER_NAME), keep_path=False)
-        self.copy("*.h", "include", "%s" % ("_build"), keep_path=False)
+        self.copy("*.h", "include", self._source_subfolder, keep_path=False)
+        self.copy("*.h", "include", self._build_subfolder, keep_path=False)
 
         # Copying static and dynamic libs
         if self.settings.os == "Windows":
             if self.options.shared:
-                self.copy(pattern="*.dll", dst="bin", src="_build", keep_path=False)
-                self.copy(pattern="*zlibd.lib", dst="lib", src="_build", keep_path=False)
-                self.copy(pattern="*zlib.lib", dst="lib", src="_build", keep_path=False)
-                self.copy(pattern="*zlib.lib", dst="lib", src="_build", keep_path=False)
-                self.copy(pattern="*zlib.dll.a", dst="lib", src="_build", keep_path=False)
+                self.copy(pattern="*.dll", dst="bin", src=self._build_subfolder, keep_path=False)
+                self.copy(pattern="*zlibd.lib", dst="lib", src=self._build_subfolder, keep_path=False)
+                self.copy(pattern="*zlib.lib", dst="lib", src=self._build_subfolder, keep_path=False)
+                self.copy(pattern="*zlib.lib", dst="lib", src=self._build_subfolder, keep_path=False)
+                self.copy(pattern="*zlib.dll.a", dst="lib", src=self._build_subfolder, keep_path=False)
             else:
-                self.copy(pattern="*zlibstaticd.*", dst="lib", src="_build", keep_path=False)
-                self.copy(pattern="*zlibstatic.*", dst="lib", src="_build", keep_path=False)
+                self.copy(pattern="*zlibstaticd.*", dst="lib", src=self._build_subfolder, keep_path=False)
+                self.copy(pattern="*zlibstatic.*", dst="lib", src=self._build_subfolder, keep_path=False)
         else:
             if self.options.shared:
                 if self.settings.os == "Macos":
                     self.copy(pattern="*.dylib", dst="lib", keep_path=False)
                 else:
-                    self.copy(pattern="*.so*", dst="lib", src=self.ZIP_FOLDER_NAME, keep_path=False)
+                    self.copy(pattern="*.so*", dst="lib", src=self._source_subfolder, keep_path=False)
             else:
-                self.copy(pattern="*.a", dst="lib", src="%s/_build" % self.ZIP_FOLDER_NAME, keep_path=False)
-                self.copy(pattern="*.a", dst="lib", src=self.ZIP_FOLDER_NAME, keep_path=False)
+                self.copy(pattern="*.a", dst="lib", src=os.path.join(self._source_subfolder, self._build_subfolder), keep_path=False)
+                self.copy(pattern="*.a", dst="lib", src=self._source_subfolder, keep_path=False)
 
     def package_info(self):
         if self.settings.os == "Windows":
