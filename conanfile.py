@@ -3,7 +3,6 @@
 import os
 import stat
 from conans import ConanFile, tools, CMake, AutoToolsBuildEnvironment
-from conans.util import files
 
 
 class ZlibConan(ConanFile):
@@ -33,7 +32,7 @@ class ZlibConan(ConanFile):
     def source(self):
         tools.get("{}/{}-{}.tar.gz".format(self.homepage, self.name, self.version))
         os.rename("{}-{}".format(self.name, self.version), self._source_subfolder)
-        files.rmdir(os.path.join(self._source_subfolder, "contrib"))
+        tools.rmdir(os.path.join(self._source_subfolder, "contrib"))
         if not tools.os_info.is_windows:
             configure_file = os.path.join(self._source_subfolder, "configure")
             st = os.stat(configure_file)
@@ -48,7 +47,7 @@ class ZlibConan(ConanFile):
                 tools.replace_in_file(filename,
                                       '#ifdef HAVE_STDARG_H    /* may be set to #if 1 by ./configure */',
                                       '#if defined(HAVE_STDARG_H) && (1-HAVE_STDARG_H-1 != 0)')
-            files.mkdir("_build")
+            tools.mkdir("_build")
             with tools.chdir("_build"):
                 if not tools.os_info.is_windows:
                     env_build = AutoToolsBuildEnvironment(self)
