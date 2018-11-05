@@ -78,7 +78,7 @@ class ZlibConan(ConanFile):
 
         # Copying static and dynamic libs
         if tools.os_info.is_windows:
-            self.copy("*.h", "include", self._build_subfolder, keep_path=False)
+            self.copy(pattern="*.h", dst="include", src=self._build_subfolder, keep_path=False)
             self.copy(pattern="*.dll", dst="bin", src=self._build_subfolder, keep_path=False)
             self.copy(pattern="*.lib", dst="lib", src=self._build_subfolder, keep_path=False)
             self.copy(pattern="*.a", dst="lib", src=self._build_subfolder, keep_path=False)

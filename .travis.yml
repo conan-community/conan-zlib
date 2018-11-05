@@ -22,9 +22,9 @@ matrix:
    include:
 
       - <<: *linux
-        env: CONAN_GCC_VERSIONS=4.8 CONAN_DOCKER_IMAGE=conanio/gcc48 CONAN_ARCHS=x86_64
+        env: CONAN_GCC_VERSIONS=4.8 CONAN_DOCKER_IMAGE=conanio/gcc46 CONAN_ARCHS=x86_64
       - <<: *linux
-        env: CONAN_GCC_VERSIONS=4.9 CONAN_DOCKER_IMAGE=conanio/gcc49 CONAN_ARCHS=armv7hf
+        env: CONAN_GCC_VERSIONS=4.8 CONAN_DOCKER_IMAGE=conanio/gcc48 CONAN_ARCHS=x86_64
       - <<: *linux
         env: CONAN_GCC_VERSIONS=4.9 CONAN_DOCKER_IMAGE=conanio/gcc49
       - <<: *linux
