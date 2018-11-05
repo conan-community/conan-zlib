@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import os
 import stat
+import shutil
 from conans import ConanFile, tools, CMake, AutoToolsBuildEnvironment
 
 
@@ -89,10 +90,10 @@ class ZlibConan(ConanFile):
                 suffix = "d" if self.settings.build_type == "Debug" else ""
                 if self.settings.compiler == "Visual Studio":
                     current_lib = os.path.join(lib_path, "zlibstatic%s.lib" % suffix)
-                    os.replace(current_lib, os.path.join(lib_path, "zlib%s.lib" % suffix))
+                    shutil.move(current_lib, os.path.join(lib_path, "zlib%s.lib" % suffix))
                 elif self.settings.compiler == "gcc":
                     current_lib = os.path.join(lib_path, "libzlibstatic.a")
-                    os.replace(current_lib, os.path.join(lib_path, "libzlib.a"))
+                    shutil.move(current_lib, os.path.join(lib_path, "libzlib.a"))
         else:
             if self.options.shared:
                 if self.settings.os == "Macos":
