@@ -15,4 +15,5 @@ class DefaultNameConan(ConanFile):
 
     def test(self):
         assert os.path.exists(os.path.join(self.deps_cpp_info["zlib"].rootpath, "licenses", "LICENSE"))
-        self.run(os.path.join("bin", "test_package"), run_environment=True)
+        if "x86" in self.settings.arch:
+            self.run(os.path.join("bin", "test_package"), run_environment=True)
