@@ -43,8 +43,8 @@ class ZlibConan(ConanFile):
         """ Define your project building. You decide the way of building it
             to reuse it later in any other project.
         """
-        with tools.chdir(self._source_subfolder):
-            if self.settings.os != "Windows":
+        if self.settings.os != "Windows":
+            with tools.chdir(self._source_subfolder):
                 env_build = AutoToolsBuildEnvironment(self)
                 if self.settings.arch == "x86" or self.settings.arch == "x86_64":
                     env_build.flags.append('-mstackrealign')
@@ -56,13 +56,10 @@ class ZlibConan(ConanFile):
 
                 env_build.configure("./")
                 env_build.make()
-            else:
-                cmake = CMake(self.settings)
-                tools.mkdir(self._build_subfolder)
-                with tools.chdir(self._build_subfolder):
-                    cmake = CMake(self)
-                    cmake.configure(build_dir=".")
-                    cmake.build(build_dir=".")
+        else:
+            cmake = CMake(self)
+            cmake.configure(build_folder=self._build_subfolder)
+            cmake.build()
 
     def package(self):
         """ Define your conan structure: headers, libs, bins and data. After building your
@@ -80,19 +77,16 @@ class ZlibConan(ConanFile):
         
         # Copying zlib.h, zutil.h, zconf.h
         self.copy("*.h", "include", self._source_subfolder, keep_path=False)
-        self.copy("*.h", "include", self._build_subfolder, keep_path=False)
 
         # Copying static and dynamic libs
         if self.settings.os == "Windows":
+            self.copy(pattern="*.h", dst="include", src=self._build_subfolder, keep_path=False)
             if self.options.shared:
                 self.copy(pattern="*.dll", dst="bin", src=self._build_subfolder, keep_path=False)
-                self.copy(pattern="*zlibd.lib", dst="lib", src=self._build_subfolder, keep_path=False)
-                self.copy(pattern="*zlib.lib", dst="lib", src=self._build_subfolder, keep_path=False)
-                self.copy(pattern="*zlib.lib", dst="lib", src=self._build_subfolder, keep_path=False)
-                self.copy(pattern="*zlib.dll.a", dst="lib", src=self._build_subfolder, keep_path=False)
+                self.copy(pattern="*.lib", dst="lib", src=self._build_subfolder, keep_path=False)
+                self.copy(pattern="*.a", dst="lib", src=self._build_subfolder, keep_path=False)
             else:
-                self.copy(pattern="*zlibstaticd.*", dst="lib", src=self._build_subfolder, keep_path=False)
-                self.copy(pattern="*zlibstatic.*", dst="lib", src=self._build_subfolder, keep_path=False)
+                self.copy(pattern="*.lib", dst="lib", src=self._build_subfolder, keep_path=False)
         else:
             if self.options.shared:
                 if self.settings.os == "Macos":
@@ -100,7 +94,7 @@ class ZlibConan(ConanFile):
                 else:
                     self.copy(pattern="*.so*", dst="lib", src=self._source_subfolder, keep_path=False)
             else:
-                self.copy(pattern="*.a", dst="lib", src=os.path.join(self._source_subfolder, self._build_subfolder), keep_path=False)
+                self.copy(pattern="*.a", dst="lib", src=os.path.join(self._source_subfolder, self._source_subfolder), keep_path=False)
                 self.copy(pattern="*.a", dst="lib", src=self._source_subfolder, keep_path=False)
 
     def package_info(self):
