@@ -52,9 +52,9 @@ class ZlibConan(ConanFile):
                 if self.settings.os == "Macos":
                     old_str = '-install_name $libdir/$SHAREDLIBM'
                     new_str = '-install_name $SHAREDLIBM'
-                    tools.replace_in_file("./configure" % self._source_subfolder, old_str, new_str)
+                    tools.replace_in_file("configure", old_str, new_str)
 
-                env_build.configure("./")
+                env_build.configure()
                 env_build.make()
         else:
             cmake = CMake(self)
