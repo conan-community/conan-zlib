@@ -81,12 +81,18 @@ class ZlibConan(ConanFile):
         # Copying static and dynamic libs
         if self.settings.os == "Windows":
             self.copy(pattern="*.h", dst="include", src=self._build_subfolder, keep_path=False)
-            if self.options.shared:
-                self.copy(pattern="*.dll", dst="bin", src=self._build_subfolder, keep_path=False)
-                self.copy(pattern="*.lib", dst="lib", src=self._build_subfolder, keep_path=False)
-                self.copy(pattern="*.a", dst="lib", src=self._build_subfolder, keep_path=False)
-            else:
-                self.copy(pattern="*.lib", dst="lib", src=self._build_subfolder, keep_path=False)
+            self.copy(pattern="*.dll", dst="bin", src=self._build_subfolder, keep_path=False)
+            self.copy(pattern="*.lib", dst="lib", src=self._build_subfolder, keep_path=False)
+            self.copy(pattern="*.a", dst="lib", src=self._build_subfolder, keep_path=False)
+            if not self.options.shared:
+                lib_path = os.path.join(self.package_folder, "lib")
+                suffix = "d" if self.settings.build_type == "Debug" else ""
+                if self.settings.compiler == "Visual Studio":
+                    current_lib = os.path.join(lib_path, "zlibstatic%s.lib" % suffix)
+                    os.replace(current_lib, os.path.join(lib_path, "zlib%s.lib" % suffix))
+                elif self.settings.compiler == "gcc":
+                    current_lib = os.path.join(lib_path, "libzlibstatic.a")
+                    os.replace(current_lib, os.path.join(lib_path, "libzlib.a"))
         else:
             if self.options.shared:
                 if self.settings.os == "Macos":
@@ -99,15 +105,6 @@ class ZlibConan(ConanFile):
 
     def package_info(self):
         if self.settings.os == "Windows":
-            if self.options.shared:
-                if self.settings.build_type == "Debug" and self.settings.compiler == "Visual Studio":
-                    self.cpp_info.libs = ['zlibd']
-                else:
-                    self.cpp_info.libs = ['zlib']
-            else:
-                if self.settings.build_type == "Debug" and  self.settings.compiler == "Visual Studio":
-                    self.cpp_info.libs = ['zlibstaticd']
-                else:
-                    self.cpp_info.libs = ['zlibstatic']
+            self.cpp_info.libs = ['zlibd' if self.settings.build_type == "Debug" else 'zlib']
         else:
             self.cpp_info.libs = ['z']
