@@ -40,8 +40,8 @@ class ZlibConan(ConanFile):
             os.chmod(configure_file, st.st_mode | stat.S_IEXEC)
             
     def build(self):
-        with tools.chdir(self._source_subfolder):
-            if self.settings.os != "Windows":
+        if self.settings.os != "Windows":
+            with tools.chdir(self._source_subfolder):
                 env_build = AutoToolsBuildEnvironment(self)
                 if self.settings.arch == "x86" or self.settings.arch == "x86_64":
                     env_build.flags.append('-mstackrealign')
@@ -55,12 +55,10 @@ class ZlibConan(ConanFile):
                 env_build.configure("./", build=False, host=False, target=False)
                 env_build.make()
 
-            else:
-                tools.mkdir(self._build_subfolder)
-                with tools.chdir(self._build_subfolder):
-                    cmake = CMake(self)
-                    cmake.configure(build_dir=".")
-                    cmake.build(build_dir=".")
+        else:
+            cmake = CMake(self)
+            cmake.configure(build_dir=self._build_subfolder)
+            cmake.build()
 
     def package(self):
         # Extract the License/s from the header to a file
@@ -77,43 +75,30 @@ class ZlibConan(ConanFile):
         
         # Copying zlib.h, zutil.h, zconf.h
         self.copy("*.h", "include", "%s" % self._source_subfolder, keep_path=False)
-        self.copy("*.h", "include", self._build_subfolder, keep_path=False)
 
         # Copying static and dynamic libs
         if tools.os_info.is_windows:
-            if self.options.shared:
-                build_dir = os.path.join(self._source_subfolder, "_build")
-                self.copy(pattern="*.dll", dst="bin", src=build_dir, keep_path=False)
-                build_dir = os.path.join(self._source_subfolder, "_build/lib")
-                self.copy(pattern="*zlibd.lib", dst="lib", src=build_dir, keep_path=False)
-                self.copy(pattern="*zlib.lib", dst="lib", src=build_dir, keep_path=False)
-                self.copy(pattern="*zlib.dll.a", dst="lib", src=build_dir, keep_path=False)
-            else:
-                build_dir = os.path.join(self._source_subfolder, "_build/lib")
-                # MinGW
-                self.copy(pattern="libzlibstaticd.a", dst="lib", src=build_dir, keep_path=False)
-                self.copy(pattern="libzlibstatic.a", dst="lib", src=build_dir, keep_path=False)
-                # Visual Studio
-                self.copy(pattern="zlibstaticd.lib", dst="lib", src=build_dir, keep_path=False)
-                self.copy(pattern="zlibstatic.lib", dst="lib", src=build_dir, keep_path=False)
-                
+            self.copy("*.h", "include", self._build_subfolder, keep_path=False)
+            self.copy(pattern="*.dll", dst="bin", src=self._build_subfolder, keep_path=False)
+            self.copy(pattern="*.lib", dst="lib", src=self._build_subfolder, keep_path=False)
+            self.copy(pattern="*.a", dst="lib", src=self._build_subfolder, keep_path=False)
+            if not self.options.shared:
                 lib_path = os.path.join(self.package_folder, "lib")
                 suffix = "d" if self.settings.build_type == "Debug" else ""
                 if self.settings.compiler == "Visual Studio":
                     current_lib = os.path.join(lib_path, "zlibstatic%s.lib" % suffix)
-                    os.rename(current_lib, os.path.join(lib_path, "zlib%s.lib" % suffix))
+                    os.replace(current_lib, os.path.join(lib_path, "zlib%s.lib" % suffix))
                 elif self.settings.compiler == "gcc":
                     current_lib = os.path.join(lib_path, "libzlibstatic.a")
-                    os.rename(current_lib, os.path.join(lib_path, "libzlib.a"))
+                    os.replace(current_lib, os.path.join(lib_path, "libzlib.a"))
         else:
-            build_dir = os.path.join(self._source_subfolder)
             if self.options.shared:
                 if self.settings.os == "Macos":
-                    self.copy(pattern="*.dylib", dst="lib", src=build_dir, keep_path=False)
+                    self.copy(pattern="*.dylib", dst="lib", src=self._source_subfolder, keep_path=False)
                 else:
-                    self.copy(pattern="*.so*", dst="lib", src=build_dir, keep_path=False)
+                    self.copy(pattern="*.so*", dst="lib", src=self._source_subfolder, keep_path=False)
             else:
-                self.copy(pattern="*.a", dst="lib", src=build_dir, keep_path=False)
+                self.copy(pattern="*.a", dst="lib", src=self._source_subfolder, keep_path=False)
 
     def package_info(self):
         if self.settings.os == "Windows":
