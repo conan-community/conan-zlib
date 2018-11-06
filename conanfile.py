@@ -105,7 +105,4 @@ class ZlibConan(ConanFile):
                 self.copy(pattern="*.a", dst="lib", src=self._source_subfolder, keep_path=False)
 
     def package_info(self):
-        if self.settings.os == "Windows":
-            self.cpp_info.libs = ['zlibd' if self.settings.build_type == "Debug" else 'zlib']
-        else:
-            self.cpp_info.libs = ['z']
+        self.cpp_info.libs = tools.collect_libs(self)
