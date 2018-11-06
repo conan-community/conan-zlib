@@ -1,6 +1,8 @@
 PROJECT(conanzlib)
 cmake_minimum_required(VERSION 2.8)
+
 include(conanbuildinfo.cmake)
 CONAN_BASIC_SETUP()
-include_directories(${CMAKE_SOURCE_DIR}/zlib-1.2.9)
-add_subdirectory("./zlib-1.2.9")
+
+include_directories(${CMAKE_SOURCE_DIR}/source_subfolder)
+add_subdirectory(source_subfolder)
