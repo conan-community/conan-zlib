@@ -77,15 +77,19 @@ class ZlibConan(ConanFile):
         # Copying zlib.h, zutil.h, zconf.h
         self.copy("*.h", "include", "%s" % self._source_subfolder, keep_path=False)
 
-        # Copying static and dynamic libs
-        if tools.os_info.is_windows:
+         # Copying static and dynamic libs
+        if self.settings.os == "Windows":
+            suffix = "d" if self.settings.build_type == "Debug" else ""
             self.copy(pattern="*.h", dst="include", src=self._build_subfolder, keep_path=False)
-            self.copy(pattern="*.dll", dst="bin", src=self._build_subfolder, keep_path=False)
-            self.copy(pattern="*.lib", dst="lib", src=self._build_subfolder, keep_path=False)
-            self.copy(pattern="*.a", dst="lib", src=self._build_subfolder, keep_path=False)
-            if not self.options.shared:
+            if self.options.shared:
+                self.copy(pattern="*.dll", dst="bin", src=self._build_subfolder, keep_path=False)
+                self.copy(pattern="libzlib.dll.a", dst="lib", src=os.path.join(self._build_subfolder, "lib"))
+                self.copy(pattern="zlib%s.lib" % suffix, dst="lib", src=os.path.join(self._build_subfolder, "lib"))
+            else:
+                self.copy(pattern="zlibstatic%s.lib" % suffix, dst="lib", src=os.path.join(self._build_subfolder, "lib"))
+                self.copy(pattern="libzlibstatic.a", dst="lib", src=os.path.join(self._build_subfolder, "lib"))
+
                 lib_path = os.path.join(self.package_folder, "lib")
-                suffix = "d" if self.settings.build_type == "Debug" else ""
                 if self.settings.compiler == "Visual Studio":
                     current_lib = os.path.join(lib_path, "zlibstatic%s.lib" % suffix)
                     shutil.move(current_lib, os.path.join(lib_path, "zlib%s.lib" % suffix))
