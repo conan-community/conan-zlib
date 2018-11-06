@@ -1,36 +1,45 @@
-from conans import ConanFile, tools, CMake, AutoToolsBuildEnvironment
-from conans.util import files
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import os
+import stat
+from conans import ConanFile, tools, CMake, AutoToolsBuildEnvironment
 
 
 class ZlibConan(ConanFile):
     name = "zlib"
     version = "1.2.11"
-    ZIP_FOLDER_NAME = "zlib-%s" % version
-    generators = "cmake"
-    settings = "os", "arch", "compiler", "build_type"
-    options = {"shared": [True, False]}
-    default_options = "shared=False"
-    exports_sources = ["CMakeLists.txt"]
-    url = "http://github.com/lasote/conan-zlib"
+    url = "http://github.com/conan-community/conan-zlib"
+    homepage = "https://zlib.net"
+    author = "Conan Community"
     license = "Zlib"
-    description = "A Massively Spiffy Yet Delicately Unobtrusive Compression Library " \
-                  "(Also Free, Not to Mention Unencumbered by Patents)"
+    description = ("A Massively Spiffy Yet Delicately Unobtrusive Compression Library "
+                  "(Also Free, Not to Mention Unencumbered by Patents)")
+    settings = "os", "arch", "compiler", "build_type"
+    options = {"shared": [True, False], "fPIC": [True, False]}
+    default_options = {"shared": False, "fPIC": True}
+    exports = "LICENSE"
+    exports_sources = ["CMakeLists.txt"]
+    generators = "cmake"
+    _source_subfolder = "source_subfolder"
+
+    def config_options(self):
+        if self.settings.os == "Windows":
+            del self.options.fPIC
 
     def configure(self):
         del self.settings.compiler.libcxx
 
     def source(self):
-        z_name = "zlib-%s.tar.gz" % self.version
-        tools.download("https://zlib.net/zlib-%s.tar.gz" % self.version, z_name)
-        tools.unzip(z_name)
-        os.unlink(z_name)
-        files.rmdir("%s/contrib" % self.ZIP_FOLDER_NAME)
+        tools.get("{}/{}-{}.tar.gz".format(self.homepage, self.name, self.version))
+        os.rename("{}-{}".format(self.name, self.version), self._source_subfolder)
+        tools.rmdir(os.path.join(self._source_subfolder, "contrib"))
         if not tools.os_info.is_windows:
-            self.run("chmod +x ./%s/configure" % self.ZIP_FOLDER_NAME)
+            configure_file = os.path.join(self._source_subfolder, "configure")
+            st = os.stat(configure_file)
+            os.chmod(configure_file, st.st_mode | stat.S_IEXEC)
 
     def build(self):
-        with tools.chdir(os.path.join(self.source_folder, self.ZIP_FOLDER_NAME)):
+        with tools.chdir(self._source_subfolder):
             for filename in ['zconf.h', 'zconf.h.cmakein', 'zconf.h.in']:
                 tools.replace_in_file(filename,
                                       '#ifdef HAVE_UNISTD_H    /* may be set to #if 1 by ./configure */',
@@ -38,14 +47,12 @@ class ZlibConan(ConanFile):
                 tools.replace_in_file(filename,
                                       '#ifdef HAVE_STDARG_H    /* may be set to #if 1 by ./configure */',
                                       '#if defined(HAVE_STDARG_H) && (1-HAVE_STDARG_H-1 != 0)')
-            files.mkdir("_build")
+            tools.mkdir("_build")
             with tools.chdir("_build"):
                 if not tools.os_info.is_windows:
                     env_build = AutoToolsBuildEnvironment(self)
                     if self.settings.arch in ["x86", "x86_64"] and self.settings.compiler in ["apple-clang", "clang", "gcc"]:
                         env_build.flags.append('-mstackrealign')
-
-                    env_build.fpic = True
 
                     if self.settings.os == "Macos":
                         old_str = '-install_name $libdir/$SHAREDLIBM'
@@ -79,41 +86,41 @@ class ZlibConan(ConanFile):
         self.output.warn("local cache: %s" % self.in_local_cache)
         self.output.warn("develop: %s" % self.develop)
         # Extract the License/s from the header to a file
-        with tools.chdir(os.path.join(self.source_folder, self.ZIP_FOLDER_NAME)):
+        with tools.chdir(os.path.join(self.source_folder, self._source_subfolder)):
             tmp = tools.load("zlib.h")
             license_contents = tmp[2:tmp.find("*/", 1)]
             tools.save("LICENSE", license_contents)
 
         # Copy the license files
-        self.copy("LICENSE", src=self.ZIP_FOLDER_NAME, dst=".")
+        self.copy("LICENSE", src=self._source_subfolder, dst="licenses")
 
         # Copy pc file
         self.copy("*.pc", dst="", keep_path=False)
 
         # Copy headers
         for header in ["*zlib.h", "*zconf.h"]:
-            self.copy(pattern=header, dst="include", src=self.ZIP_FOLDER_NAME, keep_path=False)
+            self.copy(pattern=header, dst="include", src=self._source_subfolder, keep_path=False)
             self.copy(pattern=header, dst="include", src="_build", keep_path=False)
 
         # Copying static and dynamic libs
-        build_dir = os.path.join(self.ZIP_FOLDER_NAME, "_build")
+        build_dir = os.path.join(self._source_subfolder, "_build")
         lib_path = os.path.join(self.package_folder, "lib")
         suffix = "d" if self.settings.build_type == "Debug" else ""
         if self.settings.os == "Windows":
             if self.options.shared:
-                build_dir = os.path.join(self.ZIP_FOLDER_NAME, "_build")
+                build_dir = os.path.join(self._source_subfolder, "_build")
                 self.copy(pattern="*.dll", dst="bin", src=build_dir, keep_path=False)
-                build_dir = os.path.join(self.ZIP_FOLDER_NAME, "_build/lib")
+                build_dir = os.path.join(self._source_subfolder, "_build/lib")
                 self.copy(pattern="*zlibd.lib", dst="lib", src=build_dir, keep_path=False)
                 self.copy(pattern="*zlib.lib", dst="lib", src=build_dir, keep_path=False)
                 self.copy(pattern="*zlib.dll.a", dst="lib", src=build_dir, keep_path=False)
                 if tools.os_info.is_linux:
-                    self.copy(pattern="*libz.dll.a", dst="lib", src=self.ZIP_FOLDER_NAME)
+                    self.copy(pattern="*libz.dll.a", dst="lib", src=self._source_subfolder)
                 if self.settings.compiler == "Visual Studio":
                     current_lib = os.path.join(lib_path, "zlib%s.lib" % suffix)
                     os.rename(current_lib, os.path.join(lib_path, "zlib.lib"))
             else:
-                build_dir = os.path.join(self.ZIP_FOLDER_NAME, "_build/lib")
+                build_dir = os.path.join(self._source_subfolder, "_build/lib")
                 if self.settings.os == "Windows":
                     if tools.os_info.is_windows:
                         # MinGW
@@ -123,7 +130,7 @@ class ZlibConan(ConanFile):
                         self.copy(pattern="zlibstaticd.lib", dst="lib", src=build_dir, keep_path=False)
                         self.copy(pattern="zlibstatic.lib", dst="lib", src=build_dir, keep_path=False)
                     if tools.os_info.is_linux:
-                        self.copy(pattern="libz.a", dst="lib", src=self.ZIP_FOLDER_NAME, keep_path=False)
+                        self.copy(pattern="libz.a", dst="lib", src=self._source_subfolder, keep_path=False)
                 if self.settings.compiler == "Visual Studio":
                     current_lib = os.path.join(lib_path, "zlibstatic%s.lib" % suffix)
                     os.rename(current_lib, os.path.join(lib_path, "zlib.lib"))

@@ -21,6 +21,7 @@ If you handle multiple dependencies in your project is better to add a *conanfil
 
     [options]
     zlib:shared=True # False
+    zlib:fPIC=True # False
     
     [generators]
     cmake

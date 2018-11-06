@@ -2,11 +2,8 @@ build: false
 
 
 environment:
-    PYTHON: "C:\\Python27"
-    PYTHON_VERSION: "2.7.8"
-    PYTHON_ARCH: "32"
+    PYTHON: "C:\\Python37"
 
-    CONAN_REFERENCE: "zlib/1.2.11"
     CONAN_USERNAME: "conan"
     CONAN_LOGIN_USERNAME: "conanbot"
     CONAN_CHANNEL: "testing"
