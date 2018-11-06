@@ -1,20 +1,19 @@
 build: false
 
-environment:
-    PYTHON: "C:\\Python27"
-    PYTHON_VERSION: "2.7.8"
-    PYTHON_ARCH: "32"
 
-    CONAN_REFERENCE: "zlib/1.2.8"
+environment:
+    PYTHON: "C:\\Python37"
+
     CONAN_USERNAME: "conan"
-    CONAN_LOGIN_USERNAME: "lasote"
-    CONAN_CHANNEL: "stable"
+    CONAN_LOGIN_USERNAME: "conanbot"
+    CONAN_CHANNEL: "testing"
     VS150COMNTOOLS: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\Common7\\Tools\\"
     CONAN_UPLOAD: "https://api.bintray.com/conan/conan-community/conan"
     CONAN_STABLE_BRANCH_PATTERN: "release/*"
+    CONAN_UPLOAD_ONLY_WHEN_STABLE: 1 # Will only upload when the branch matches "release/*"
 
     matrix:
-        - MINGW_CONFIGURATIONS: "4.9@x86_64@seh@posix, 4.9@x86_64@sjlj@posix, 4.9@x86@sjlj@posix, 4.9@x86@dwarf2@posix"
+        - MINGW_CONFIGURATIONS: "4.9@x86_64@seh@posix, 5@x86_64@seh@posix, 6@x86_64@seh@posix, 7@x86_64@seh@posix"
         - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
           CONAN_VISUAL_VERSIONS: 12
         - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
@@ -30,3 +29,4 @@ install:
 
 test_script:
   - python build.py
+

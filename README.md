@@ -36,6 +36,7 @@ If you handle multiple dependencies in your project is better to add a *conanfil
 
     [options]
     zlib:shared=true # false
+    zlib:fPIC=true # false
     
     [generators]
     txt
