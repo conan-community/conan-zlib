@@ -16,7 +16,7 @@ class ZlibConan(ConanFile):
                   "(Also Free, Not to Mention Unencumbered by Patents)")
     settings = "os", "arch", "compiler", "build_type"
     options = {"shared": [True, False], "fPIC": [True, False]}
-    default_options = {"shared": False, "fPIC": True}
+    default_options = "shared=False", "fPIC=True"
     exports = "LICENSE"
     exports_sources = ["CMakeLists.txt"]
     generators = "cmake"
