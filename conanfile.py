@@ -65,6 +65,11 @@ class ZlibConan(ConanFile):
 
                     if self.settings.os == "iOS":
                         tools.replace_in_file("../gzguts.h", '#ifdef _LARGEFILE64_SOURCE', '#include <unistd.h>\n\n#ifdef _LARGEFILE64_SOURCE')
+                    
+                    # configure passes CFLAGS to linker, should be LDFLAGS
+                    tools.replace_in_file("../configure", "$LDSHARED $SFLAGS", "$LDSHARED $LDFLAGS")
+                    # same thing in Makefile.in, when building tests/example executables
+                    tools.replace_in_file("../Makefile.in", "$(CC) $(CFLAGS) -o", "$(CC) $(LDFLAGS) -o")
 
                     if self.settings.os == "Windows" and tools.os_info.is_linux:
                         # Let our profile to declare what is needed.
