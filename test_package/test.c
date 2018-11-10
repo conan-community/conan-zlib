@@ -27,6 +27,6 @@ int main(void) {
     printf("Compressed string is: %s\n", buffer_out);
 
     printf("ZLIB VERSION: %s\n", zlibVersion());
-    
+
     return EXIT_SUCCESS;
 }
