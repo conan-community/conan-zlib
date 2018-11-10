@@ -5,7 +5,7 @@ include(../../../conanbuildinfo.cmake)
 conan_basic_setup()
 
 set(SOURCES ioapi.c mztools.c unzip.c zip.c)
-set(HEADERS crypt.h ioapi.h mztools.h unzip.h zip.h)
+set(HEADERS crypt.h ioapi.h mztools.h unzip.h zip.h minizip_extern.h)
 
 if(WIN32)
   set(SOURCES ${SOURCES} iowin32.c)
@@ -17,6 +17,25 @@ if(WIN32)
 endif()
 
 add_library(minizip ${SOURCES} ${HEADERS})
+target_include_directories(minizip PRIVATE
+  ${CMAKE_CURRENT_SOURCE_DIR}/../..
+  ${CMAKE_CURRENT_SOURCE_DIR}/../../_build
+  ${CMAKE_CURRENT_SOURCE_DIR}/../../_build/source_subfolder)
+
+find_library(ZLIB_LIBRARY NAMES z zlib zlibstatic zlibstaticd PATHS
+  ${CMAKE_CURRENT_SOURCE_DIR}/../../_build
+  ${CMAKE_CURRENT_SOURCE_DIR}/../../_build/lib)
+
+target_link_libraries(minizip PRIVATE ${ZLIB_LIBRARY})
+target_compile_definitions(minizip PRIVATE MINIZIP_BUILDING)
+if(BUILD_SHARED_LIBS)
+  set_target_properties(minizip PROPERTIES INSTALL_RPATH "$ORIGIN" BUILD_WITH_INSTALL_RPATH True)
+  target_compile_definitions(minizip PRIVATE MINIZIP_DLL ZLIB_DLL)
+
+  if(WIN32)
+    set_target_properties(minizip PROPERTIES SUFFIX "1.dll")
+  endif()
+endif()
 
 set_target_properties(minizip PROPERTIES PUBLIC_HEADER "${HEADERS}")
 set_target_properties(minizip PROPERTIES SOVERSION 1)
