@@ -15,10 +15,10 @@ class ZlibConan(ConanFile):
     description = ("A Massively Spiffy Yet Delicately Unobtrusive Compression Library "
                   "(Also Free, Not to Mention Unencumbered by Patents)")
     settings = "os", "arch", "compiler", "build_type"
-    options = {"shared": [True, False], "fPIC": [True, False]}
-    default_options = "shared=False", "fPIC=True"
+    options = {"shared": [True, False], "fPIC": [True, False], "minizip": [True, False]}
+    default_options = "shared=False", "fPIC=True", "minizip=False"
     exports = "LICENSE"
-    exports_sources = ["CMakeLists.txt"]
+    exports_sources = ["CMakeLists.txt", "CMakeLists_minizip.txt", "minizip.patch"]
     generators = "cmake"
     _source_subfolder = "source_subfolder"
 
@@ -32,13 +32,18 @@ class ZlibConan(ConanFile):
     def source(self):
         tools.get("{}/{}-{}.tar.gz".format(self.homepage, self.name, self.version))
         os.rename("{}-{}".format(self.name, self.version), self._source_subfolder)
-        tools.rmdir(os.path.join(self._source_subfolder, "contrib"))
         if not tools.os_info.is_windows:
             configure_file = os.path.join(self._source_subfolder, "configure")
             st = os.stat(configure_file)
             os.chmod(configure_file, st.st_mode | stat.S_IEXEC)
+        tools.patch(patch_file="minizip.patch", base_path=self._source_subfolder)
 
     def build(self):
+        self._build_zlib()
+        if self.options.minizip:
+            self._build_minizip()
+
+    def _build_zlib(self):
         with tools.chdir(self._source_subfolder):
             for filename in ['zconf.h', 'zconf.h.cmakein', 'zconf.h.in']:
                 tools.replace_in_file(filename,
@@ -81,6 +86,15 @@ class ZlibConan(ConanFile):
                     cmake = CMake(self)
                     cmake.configure(build_dir=".")
                     cmake.build(build_dir=".")
+
+    def _build_minizip(self):
+        minizip_dir = os.path.join(self._source_subfolder, 'contrib', 'minizip')
+        os.rename("CMakeLists_minizip.txt", os.path.join(minizip_dir, 'CMakeLists.txt'))
+        with tools.chdir(minizip_dir):
+            cmake = CMake(self)
+            cmake.configure(source_folder=minizip_dir)
+            cmake.build()
+            cmake.install()
 
     def package(self):
         self.output.warn("local cache: %s" % self.in_local_cache)
@@ -148,7 +162,11 @@ class ZlibConan(ConanFile):
                 self.copy(pattern="*.a", dst="lib", src=build_dir, keep_path=False)
 
     def package_info(self):
+        if self.options.minizip:
+            self.cpp_info.libs.append('minizip')
+            if self.options.shared:
+                self.cpp_info.defines.append('MINIZIP_DLL')
         if self.settings.os == "Windows" and not tools.os_info.is_linux:
-            self.cpp_info.libs = ['zlib']
+            self.cpp_info.libs.append('zlib')
         else:
-            self.cpp_info.libs = ['z']
+            self.cpp_info.libs.append('z')
