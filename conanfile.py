@@ -77,20 +77,38 @@ class ZlibConan(ConanFile):
                     tools.replace_in_file("../Makefile.in", "$(CC) $(CFLAGS) -o", "$(CC) $(LDFLAGS) -o")
 
                     if self.settings.os == "Windows" and tools.os_info.is_linux:
+                        # we need to build only libraries without test example and minigzip
+                        if self.options.shared:
+                            make_target = "zlib1.dll"
+                        else:
+                            make_target = "libz.a"
                         # Let our profile to declare what is needed.
                         tools.replace_in_file("../win32/Makefile.gcc", 'LDFLAGS = $(LOC)', '')
                         tools.replace_in_file("../win32/Makefile.gcc", 'AS = $(CC)', '')
                         tools.replace_in_file("../win32/Makefile.gcc", 'AR = $(PREFIX)ar', '')
                         tools.replace_in_file("../win32/Makefile.gcc", 'CC = $(PREFIX)gcc', '')
                         tools.replace_in_file("../win32/Makefile.gcc", 'RC = $(PREFIX)windres', '')
-                        self.run("cd .. && make -f win32/Makefile.gcc")
+                        self.run("cd .. && make -f win32/Makefile.gcc %s" % make_target)
                     else:
+                        # we need to build only libraries without test example and minigzip
+                        if self.options.shared:
+                            if self.settings.os == "Macos":
+                                make_target = "libz.%s.dylib" % self.version
+                            else:
+                                make_target = "libz.so.%s" % self.version
+                    else:
+                            make_target = "libz.a"
                         env_build.configure("../", build=False, host=False, target=False)
-                        env_build.make()
+                        env_build.make(target=make_target)
                 else:
                     cmake = CMake(self)
                     cmake.configure(build_dir=".")
-                    cmake.build(build_dir=".")
+                    # we need to build only libraries without test example/example64 and minigzip/minigzip64
+                    if self.options.shared:
+                        make_target = "zlib"
+                    else:
+                        make_target = "zlibstatic"
+                    cmake.build(build_dir=".", target=make_target)
 
     def _build_minizip(self):
         minizip_dir = os.path.join(self._source_subfolder, 'contrib', 'minizip')
