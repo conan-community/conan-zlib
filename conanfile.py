@@ -96,7 +96,7 @@ class ZlibConan(ConanFile):
                                 make_target = "libz.%s.dylib" % self.version
                             else:
                                 make_target = "libz.so.%s" % self.version
-                    else:
+                        else:
                             make_target = "libz.a"
                         env_build.configure("../", build=False, host=False, target=False)
                         env_build.make(target=make_target)
@@ -178,9 +178,9 @@ class ZlibConan(ConanFile):
         else:
             if self.options.shared:
                 if self.settings.os == "Macos":
-                    self.copy(pattern="*.dylib", dst="lib", src=build_dir, keep_path=False)
+                    self.copy(pattern="*.dylib", dst="lib", src=build_dir, keep_path=False, symlinks=True)
                 else:
-                    self.copy(pattern="*.so*", dst="lib", src=build_dir, keep_path=False)
+                    self.copy(pattern="*.so*", dst="lib", src=build_dir, keep_path=False, symlinks=True)
             else:
                 self.copy(pattern="*.a", dst="lib", src=build_dir, keep_path=False)
 
