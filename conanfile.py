@@ -76,6 +76,11 @@ class ZlibConan(ConanFile):
                     # same thing in Makefile.in, when building tests/example executables
                     tools.replace_in_file("../Makefile.in", "$(CC) $(CFLAGS) -o", "$(CC) $(LDFLAGS) -o")
 
+                    env_build_vars = env_build.vars
+                    if self.settings.os == "Macos":
+                        # force macOS ranlib because ranlib from binutils produced malformed ar archives
+                        env_build_vars['RANLIB'] = '/usr/bin/ranlib'
+
                     if self.settings.os == "Windows" and tools.os_info.is_linux:
                         # we need to build only libraries without test example and minigzip
                         if self.options.shared:
@@ -98,8 +103,8 @@ class ZlibConan(ConanFile):
                                 make_target = "libz.so.%s" % self.version
                         else:
                             make_target = "libz.a"
-                        env_build.configure("../", build=False, host=False, target=False)
-                        env_build.make(target=make_target)
+                        env_build.configure("../", build=False, host=False, target=False, vars=env_build_vars)
+                        env_build.make()
                 else:
                     cmake = CMake(self)
                     cmake.configure(build_dir=".")
