@@ -77,9 +77,9 @@ class ZlibConan(ConanFile):
                     tools.replace_in_file("../Makefile.in", "$(CC) $(CFLAGS) -o", "$(CC) $(LDFLAGS) -o")
 
                     env_build_vars = env_build.vars
-                    if self.settings.os == "Macos":
+                    if tools.is_apple_os(self.settings.os):
                         # force macOS ranlib because ranlib from binutils produced malformed ar archives
-                        env_build_vars['RANLIB'] = '/usr/bin/ranlib'
+                        env_build_vars['RANLIB'] = tools.XCRun(self.settings).ranlib
 
                     if self.settings.os == "Windows" and tools.os_info.is_linux:
                         # we need to build only libraries without test example and minigzip
