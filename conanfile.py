@@ -104,7 +104,7 @@ class ZlibConan(ConanFile):
                         else:
                             make_target = "libz.a"
                         env_build.configure("../", build=False, host=False, target=False, vars=env_build_vars)
-                        env_build.make()
+                        env_build.make(target=make_target)
                 else:
                     cmake = CMake(self)
                     cmake.configure(build_dir=".")
