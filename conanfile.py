@@ -64,6 +64,11 @@ class ZlibConan(ConanFile):
                         new_str = '-install_name $SHAREDLIBM'
                         tools.replace_in_file("../configure", old_str, new_str)
 
+                    # https://github.com/madler/zlib/issues/268
+                    tools.replace_in_file('../gzguts.h',
+                                          '#if defined(_WIN32) || defined(__CYGWIN__)',
+                                          '#if defined(_WIN32) || defined(__MINGW32__)')
+
                     if self.settings.os == "Windows":  # Cross building to Linux
                         tools.replace_in_file("../configure", 'LDSHAREDLIBC="${LDSHAREDLIBC--lc}"', 'LDSHAREDLIBC=""')
                     # Zlib configure doesnt allow this parameters
@@ -171,13 +176,16 @@ class ZlibConan(ConanFile):
                         # Visual Studio
                         self.copy(pattern="zlibstaticd.lib", dst="lib", src=build_dir, keep_path=False)
                         self.copy(pattern="zlibstatic.lib", dst="lib", src=build_dir, keep_path=False)
+                    elif not tools.os_info.is_linux:
+                        # MSYS/Cygwin build
+                        self.copy(pattern="*libz.a", dst="lib", src=self._source_subfolder, keep_path=False)
                     if tools.os_info.is_linux:
                         self.copy(pattern="libz.a", dst="lib", src=self._source_subfolder, keep_path=False)
                 if self.settings.compiler == "Visual Studio":
                     current_lib = os.path.join(lib_path, "zlibstatic%s.lib" % suffix)
                     os.rename(current_lib, os.path.join(lib_path, "zlib.lib"))
                 elif self.settings.compiler == "gcc":
-                    if not tools.os_info.is_linux:
+                    if tools.os_info.is_windows:
                         current_lib = os.path.join(lib_path, "libzlibstatic.a")
                         os.rename(current_lib, os.path.join(lib_path, "libzlib.a"))
         else:
@@ -195,6 +203,9 @@ class ZlibConan(ConanFile):
             if self.options.shared:
                 self.cpp_info.defines.append('MINIZIP_DLL')
         if self.settings.os == "Windows" and not tools.os_info.is_linux:
-            self.cpp_info.libs.append('zlib')
+            if tools.os_info.is_windows:
+                self.cpp_info.libs.append('zlib')
+            else:
+                self.cpp_info.libs.append('z')  # MSYS/Cygwin builds
         else:
             self.cpp_info.libs.append('z')
