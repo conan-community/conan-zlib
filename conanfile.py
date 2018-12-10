@@ -56,8 +56,6 @@ class ZlibConan(ConanFile):
             with tools.chdir("_build"):
                 if not tools.os_info.is_windows:
                     env_build = AutoToolsBuildEnvironment(self)
-                    if self.settings.arch in ["x86", "x86_64"] and self.settings.compiler in ["apple-clang", "clang", "gcc"]:
-                        env_build.flags.append('-mstackrealign')
 
                     if self.settings.os == "Macos":
                         old_str = '-install_name $libdir/$SHAREDLIBM'
