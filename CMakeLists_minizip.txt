@@ -22,7 +22,7 @@ target_include_directories(minizip PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}/../../_build
   ${CMAKE_CURRENT_SOURCE_DIR}/../../_build/source_subfolder)
 
-find_library(ZLIB_LIBRARY NAMES z zlib zlibstatic zlibstaticd PATHS
+find_library(ZLIB_LIBRARY NAMES z zlib zlibd zlibstatic zlibstaticd PATHS
   ${CMAKE_CURRENT_SOURCE_DIR}/../../_build
   ${CMAKE_CURRENT_SOURCE_DIR}/../../_build/lib)
 
