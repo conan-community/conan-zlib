@@ -13,7 +13,7 @@ class ZlibConan(ConanFile):
     author = "Conan Community"
     license = "Zlib"
     description = ("A Massively Spiffy Yet Delicately Unobtrusive Compression Library "
-                  "(Also Free, Not to Mention Unencumbered by Patents)")
+                   "(Also Free, Not to Mention Unencumbered by Patents)")
     settings = "os", "arch", "compiler", "build_type"
     options = {"shared": [True, False], "fPIC": [True, False], "minizip": [True, False]}
     default_options = "shared=False", "fPIC=True", "minizip=False"
@@ -56,6 +56,10 @@ class ZlibConan(ConanFile):
             with tools.chdir("_build"):
                 if not tools.os_info.is_windows:
                     env_build = AutoToolsBuildEnvironment(self)
+
+                    if tools.is_apple_os(self.settings.os) and self.settings.get_safe("os.version"):
+                        env_build.flags.append(tools.apple_deployment_target_flag(self.settings.os,
+                                                                                  self.settings.os.version))
 
                     if self.settings.os == "Macos":
                         old_str = '-install_name $libdir/$SHAREDLIBM'
