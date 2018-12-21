@@ -19,7 +19,7 @@ environment:
         - MINGW_CONFIGURATIONS: "4.9@x86@dwarf2@posix"
         - MINGW_CONFIGURATIONS: "5@x86_64@seh@posix"
         - MINGW_CONFIGURATIONS: "6@x86_64@seh@posix"
-        - MINGW_CONFIGURARIONS: "7@x86_64@seh@posix"
+        - MINGW_CONFIGURATIONS: "7@x86_64@seh@posix"
         - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
           CONAN_VISUAL_VERSIONS: 12
         - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
