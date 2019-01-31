@@ -13,12 +13,12 @@ class ZlibConan(ConanFile):
     author = "Conan Community"
     license = "Zlib"
     description = ("A Massively Spiffy Yet Delicately Unobtrusive Compression Library "
-                  "(Also Free, Not to Mention Unencumbered by Patents)")
+                   "(Also Free, Not to Mention Unencumbered by Patents)")
     settings = "os", "arch", "compiler", "build_type"
-    options = {"shared": [True, False], "fPIC": [True, False]}
-    default_options = {"shared": False, "fPIC": True}
+    options = {"shared": [True, False], "fPIC": [True, False], "minizip": [True, False]}
+    default_options = "shared=False", "fPIC=True", "minizip=False"
     exports = "LICENSE"
-    exports_sources = ["CMakeLists.txt"]
+    exports_sources = ["CMakeLists.txt", "CMakeLists_minizip.txt", "minizip.patch"]
     generators = "cmake"
     _source_subfolder = "source_subfolder"
 
@@ -32,13 +32,18 @@ class ZlibConan(ConanFile):
     def source(self):
         tools.get("{}/{}-{}.tar.gz".format(self.homepage, self.name, self.version))
         os.rename("{}-{}".format(self.name, self.version), self._source_subfolder)
-        tools.rmdir(os.path.join(self._source_subfolder, "contrib"))
         if not tools.os_info.is_windows:
             configure_file = os.path.join(self._source_subfolder, "configure")
             st = os.stat(configure_file)
             os.chmod(configure_file, st.st_mode | stat.S_IEXEC)
+        tools.patch(patch_file="minizip.patch", base_path=self._source_subfolder)
 
     def build(self):
+        self._build_zlib()
+        if self.options.minizip:
+            self._build_minizip()
+
+    def _build_zlib(self):
         with tools.chdir(self._source_subfolder):
             for filename in ['zconf.h', 'zconf.h.cmakein', 'zconf.h.in']:
                 tools.replace_in_file(filename,
@@ -51,13 +56,20 @@ class ZlibConan(ConanFile):
             with tools.chdir("_build"):
                 if not tools.os_info.is_windows:
                     env_build = AutoToolsBuildEnvironment(self)
-                    if self.settings.arch in ["x86", "x86_64"] and self.settings.compiler in ["apple-clang", "clang", "gcc"]:
-                        env_build.flags.append('-mstackrealign')
+
+                    if tools.is_apple_os(self.settings.os) and self.settings.get_safe("os.version"):
+                        env_build.flags.append(tools.apple_deployment_target_flag(self.settings.os,
+                                                                                  self.settings.os.version))
 
                     if self.settings.os == "Macos":
                         old_str = '-install_name $libdir/$SHAREDLIBM'
                         new_str = '-install_name $SHAREDLIBM'
                         tools.replace_in_file("../configure", old_str, new_str)
+
+                    # https://github.com/madler/zlib/issues/268
+                    tools.replace_in_file('../gzguts.h',
+                                          '#if defined(_WIN32) || defined(__CYGWIN__)',
+                                          '#if defined(_WIN32) || defined(__MINGW32__)')
 
                     if self.settings.os == "Windows":  # Cross building to Linux
                         tools.replace_in_file("../configure", 'LDSHAREDLIBC="${LDSHAREDLIBC--lc}"', 'LDSHAREDLIBC=""')
@@ -65,22 +77,59 @@ class ZlibConan(ConanFile):
 
                     if self.settings.os == "iOS":
                         tools.replace_in_file("../gzguts.h", '#ifdef _LARGEFILE64_SOURCE', '#include <unistd.h>\n\n#ifdef _LARGEFILE64_SOURCE')
+                    
+                    # configure passes CFLAGS to linker, should be LDFLAGS
+                    tools.replace_in_file("../configure", "$LDSHARED $SFLAGS", "$LDSHARED $LDFLAGS")
+                    # same thing in Makefile.in, when building tests/example executables
+                    tools.replace_in_file("../Makefile.in", "$(CC) $(CFLAGS) -o", "$(CC) $(LDFLAGS) -o")
+
+                    env_build_vars = env_build.vars
+                    if tools.is_apple_os(self.settings.os):
+                        # force macOS ranlib because ranlib from binutils produced malformed ar archives
+                        env_build_vars['RANLIB'] = tools.XCRun(self.settings).ranlib
 
                     if self.settings.os == "Windows" and tools.os_info.is_linux:
+                        # we need to build only libraries without test example and minigzip
+                        if self.options.shared:
+                            make_target = "zlib1.dll"
+                        else:
+                            make_target = "libz.a"
                         # Let our profile to declare what is needed.
                         tools.replace_in_file("../win32/Makefile.gcc", 'LDFLAGS = $(LOC)', '')
                         tools.replace_in_file("../win32/Makefile.gcc", 'AS = $(CC)', '')
                         tools.replace_in_file("../win32/Makefile.gcc", 'AR = $(PREFIX)ar', '')
                         tools.replace_in_file("../win32/Makefile.gcc", 'CC = $(PREFIX)gcc', '')
                         tools.replace_in_file("../win32/Makefile.gcc", 'RC = $(PREFIX)windres', '')
-                        self.run("cd .. && make -f win32/Makefile.gcc")
+                        self.run("cd .. && make -f win32/Makefile.gcc %s" % make_target)
                     else:
-                        env_build.configure("../", build=False, host=False, target=False)
-                        env_build.make()
+                        # we need to build only libraries without test example and minigzip
+                        if self.options.shared:
+                            if self.settings.os == "Macos":
+                                make_target = "libz.%s.dylib" % self.version
+                            else:
+                                make_target = "libz.so.%s" % self.version
+                        else:
+                            make_target = "libz.a"
+                        env_build.configure("../", build=False, host=False, target=False, vars=env_build_vars)
+                        env_build.make(target=make_target)
                 else:
                     cmake = CMake(self)
                     cmake.configure(build_dir=".")
-                    cmake.build(build_dir=".")
+                    # we need to build only libraries without test example/example64 and minigzip/minigzip64
+                    if self.options.shared:
+                        make_target = "zlib"
+                    else:
+                        make_target = "zlibstatic"
+                    cmake.build(build_dir=".", target=make_target)
+
+    def _build_minizip(self):
+        minizip_dir = os.path.join(self._source_subfolder, 'contrib', 'minizip')
+        os.rename("CMakeLists_minizip.txt", os.path.join(minizip_dir, 'CMakeLists.txt'))
+        with tools.chdir(minizip_dir):
+            cmake = CMake(self)
+            cmake.configure(source_folder=minizip_dir)
+            cmake.build()
+            cmake.install()
 
     def package(self):
         self.output.warn("local cache: %s" % self.in_local_cache)
@@ -129,26 +178,36 @@ class ZlibConan(ConanFile):
                         # Visual Studio
                         self.copy(pattern="zlibstaticd.lib", dst="lib", src=build_dir, keep_path=False)
                         self.copy(pattern="zlibstatic.lib", dst="lib", src=build_dir, keep_path=False)
+                    elif not tools.os_info.is_linux:
+                        # MSYS/Cygwin build
+                        self.copy(pattern="*libz.a", dst="lib", src=self._source_subfolder, keep_path=False)
                     if tools.os_info.is_linux:
                         self.copy(pattern="libz.a", dst="lib", src=self._source_subfolder, keep_path=False)
                 if self.settings.compiler == "Visual Studio":
                     current_lib = os.path.join(lib_path, "zlibstatic%s.lib" % suffix)
                     os.rename(current_lib, os.path.join(lib_path, "zlib.lib"))
                 elif self.settings.compiler == "gcc":
-                    if not tools.os_info.is_linux:
+                    if tools.os_info.is_windows:
                         current_lib = os.path.join(lib_path, "libzlibstatic.a")
                         os.rename(current_lib, os.path.join(lib_path, "libzlib.a"))
         else:
             if self.options.shared:
                 if self.settings.os == "Macos":
-                    self.copy(pattern="*.dylib", dst="lib", src=build_dir, keep_path=False)
+                    self.copy(pattern="*.dylib", dst="lib", src=build_dir, keep_path=False, symlinks=True)
                 else:
-                    self.copy(pattern="*.so*", dst="lib", src=build_dir, keep_path=False)
+                    self.copy(pattern="*.so*", dst="lib", src=build_dir, keep_path=False, symlinks=True)
             else:
                 self.copy(pattern="*.a", dst="lib", src=build_dir, keep_path=False)
 
     def package_info(self):
+        if self.options.minizip:
+            self.cpp_info.libs.append('minizip')
+            if self.options.shared:
+                self.cpp_info.defines.append('MINIZIP_DLL')
         if self.settings.os == "Windows" and not tools.os_info.is_linux:
-            self.cpp_info.libs = ['zlib']
+            if tools.os_info.is_windows:
+                self.cpp_info.libs.append('zlib')
+            else:
+                self.cpp_info.libs.append('z')  # MSYS/Cygwin builds
         else:
-            self.cpp_info.libs = ['z']
+            self.cpp_info.libs.append('z')
