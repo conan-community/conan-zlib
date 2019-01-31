@@ -20,14 +20,14 @@ If you wish to report an issue or make a request for a package, please do so her
 
 ### Basic setup
 
-    $ conan install zlib/1.2.11@conan/release
+    $ conan install zlib/1.2.11@conan/stable
 
 ### Project setup
 
 If you handle multiple dependencies in your project is better to add a *conanfile.txt*
 
     [requires]
-    zlib/1.2.11@conan/release
+    zlib/1.2.11@conan/stable
 
     [generators]
     cmake
@@ -43,7 +43,7 @@ Note: It is recommended that you run conan install from a build directory and no
 
 The following command both runs all the steps of the conan file, and publishes the package to the local system cache.  This includes downloading dependencies from "build_requires" and "requires" , and then running the build() method.
 
-    $ conan create . conan/release
+    $ conan create . conan/stable
 
 
 ### Available Options
