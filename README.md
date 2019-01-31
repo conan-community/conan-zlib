@@ -63,4 +63,4 @@ The following command both runs all the steps of the conan file, and publishes t
 NOTE: The conan recipe license applies only to the files of this recipe, which can be used to build and package zlib.
 It does *not* in any way apply or is related to the actual software being packaged.
 
-[MIT](git@github.com:uilianries/conan-zlib/blob/release/1.2.11/LICENSE.md)
+[MIT](LICENSE)
