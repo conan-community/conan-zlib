@@ -1,5 +1,5 @@
 [![Download](https://api.bintray.com/packages/conan-community/conan/zlib%3Aconan/images/download.svg) ](https://bintray.com/conan-community/conan/zlib%3Aconan/_latestVersion)
-[![Build Status Travis](https://travis-ci.org/conan-community/conan-zlib.svg](https://travis-ci.org/conan-community/conan-zlib)
+[![Build Status Travis](https://travis-ci.org/conan-community/conan-zlib.svg)](https://travis-ci.org/conan-community/conan-zlib)
 [![Build Status AppVeyor](https://ci.appveyor.com/api/projects/status/github/conan-community/conan-zlib?svg=true)](https://ci.appveyor.com/project/ConanCIintegration/conan-zlib)
 
 ## Conan package recipe for [*zlib*](https://zlib.net)
