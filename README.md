@@ -1,6 +1,6 @@
 [![Download](https://api.bintray.com/packages/conan-community/conan/zlib%3Aconan/images/download.svg) ](https://bintray.com/conan-community/conan/zlib%3Aconan/_latestVersion)
-[![Build Status Travis](https://travis-ci.org/conan-community/conan-zlib.svg?branch=release%2F1.2.11)](https://travis-ci.org/conan-community/conan-zlib)
-[![Build Status AppVeyor](https://ci.appveyor.com/api/projects/status/github/conan-community/conan-zlib?branch=release%2F1.2.11&svg=true)](https://ci.appveyor.com/project/ConanCIintegration/conan-zlib)
+[![Build Status Travis](https://travis-ci.org/conan-community/conan-zlib.svg)](https://travis-ci.org/conan-community/conan-zlib)
+[![Build Status AppVeyor](https://ci.appveyor.com/api/projects/status/github/conan-community/conan-zlib?svg=true)](https://ci.appveyor.com/project/ConanCIintegration/conan-zlib)
 
 ## Conan package recipe for [*zlib*](https://zlib.net)
 
@@ -51,11 +51,14 @@ The following command both runs all the steps of the conan file, and publishes t
 | ------------- |:----------------- |:------------:|
 | shared      | False |  [True, False] |
 | fPIC      | True |  [True, False] |
+| minizip      | False |  [True, False] |
 
 
 ## Add Remote
 
-    $ conan remote add conan-community "https://api.bintray.com/conan/conan-community/conan"
+Conan Community has its own Bintray repository, however, we are working to distribute all package in the Conan Center:
+
+    $ conan remote add conan-center "https://conan.bintray.com"
 
 
 ## Conan Recipe License
