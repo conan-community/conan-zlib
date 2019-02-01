@@ -1,6 +1,6 @@
 [![Download](https://api.bintray.com/packages/conan-community/conan/zlib%3Aconan/images/download.svg) ](https://bintray.com/conan-community/conan/zlib%3Aconan/_latestVersion)
-[![Build Status Travis](https://travis-ci.org/conan-community/conan-zlib.svg?branch=stable%2F1.2.8)](https://travis-ci.org/conan-community/conan-zlib)
-[![Build Status AppVeyor](https://ci.appveyor.com/api/projects/status/github/conan-community/conan-zlib?branch=stable%2F1.2.8&svg=true)](https://ci.appveyor.com/project/ConanCIintegration/conan-zlib)
+[![Build Status Travis](https://travis-ci.org/conan-community/conan-zlib.svg](https://travis-ci.org/conan-community/conan-zlib)
+[![Build Status AppVeyor](https://ci.appveyor.com/api/projects/status/github/conan-community/conan-zlib?svg=true)](https://ci.appveyor.com/project/ConanCIintegration/conan-zlib)
 
 ## Conan package recipe for [*zlib*](https://zlib.net)
 
@@ -65,4 +65,4 @@ Conan Community has its own Bintray repository, however, we are working to distr
 NOTE: The conan recipe license applies only to the files of this recipe, which can be used to build and package zlib.
 It does *not* in any way apply or is related to the actual software being packaged.
 
-[MIT](git@github.com:conan-community/conan-zlib/blob/stable/1.2.8/LICENSE.md)
+[MIT](LICENSE)
