@@ -65,4 +65,4 @@ Conan Community has its own Bintray repository, however, we are working to distr
 NOTE: The conan recipe license applies only to the files of this recipe, which can be used to build and package zlib.
 It does *not* in any way apply or is related to the actual software being packaged.
 
-[MIT](https://ac62a2555ba90281a3ae51d7e2f1f899239af18e:@github.com/conan-community/conan-zlib/blob/stable/1.2.8/LICENSE.md)
+[MIT](https://b5e1e5ed902d0e8bf947fb1e4df788e361d0fa06:@github.com/conan-community/conan-zlib/blob/stable/1.2.8/LICENSE.md)
