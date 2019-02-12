@@ -17,7 +17,7 @@ class ZlibConan(ConanFile):
     settings = "os", "arch", "compiler", "build_type"
     options = {"shared": [True, False], "fPIC": [True, False], "minizip": [True, False]}
     default_options = "shared=False", "fPIC=True", "minizip=False"
-    exports = "LICENSE"
+    exports = ["LICENSE", "FindZLIB.cmake"]
     exports_sources = ["CMakeLists.txt", "CMakeLists_minizip.txt", "minizip.patch"]
     generators = "cmake"
     _source_subfolder = "source_subfolder"
@@ -77,7 +77,7 @@ class ZlibConan(ConanFile):
 
                     if self.settings.os == "iOS":
                         tools.replace_in_file("../gzguts.h", '#ifdef _LARGEFILE64_SOURCE', '#include <unistd.h>\n\n#ifdef _LARGEFILE64_SOURCE')
-                    
+
                     # configure passes CFLAGS to linker, should be LDFLAGS
                     tools.replace_in_file("../configure", "$LDSHARED $SFLAGS", "$LDSHARED $LDFLAGS")
                     # same thing in Makefile.in, when building tests/example executables
@@ -198,6 +198,9 @@ class ZlibConan(ConanFile):
                     self.copy(pattern="*.so*", dst="lib", src=build_dir, keep_path=False, symlinks=True)
             else:
                 self.copy(pattern="*.a", dst="lib", src=build_dir, keep_path=False)
+
+        # Provide a cmake finder
+        self.copy('FindZLIB.cmake', '.', '.')
 
     def package_info(self):
         if self.options.minizip:
