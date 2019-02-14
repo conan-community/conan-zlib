@@ -54,29 +54,13 @@ class ZlibConan(ConanFile):
                                       '#if defined(HAVE_STDARG_H) && (1-HAVE_STDARG_H-1 != 0)')
             tools.mkdir("_build")
             with tools.chdir("_build"):
-                if not tools.os_info.is_windows:
+                if self.settings.os == "Linux":
                     env_build = AutoToolsBuildEnvironment(self)
-
-                    if tools.is_apple_os(self.settings.os) and self.settings.get_safe("os.version"):
-                        env_build.flags.append(tools.apple_deployment_target_flag(self.settings.os,
-                                                                                  self.settings.os.version))
-
-                    if self.settings.os == "Macos":
-                        old_str = '-install_name $libdir/$SHAREDLIBM'
-                        new_str = '-install_name $SHAREDLIBM'
-                        tools.replace_in_file("../configure", old_str, new_str)
 
                     # https://github.com/madler/zlib/issues/268
                     tools.replace_in_file('../gzguts.h',
                                           '#if defined(_WIN32) || defined(__CYGWIN__)',
                                           '#if defined(_WIN32) || defined(__MINGW32__)')
-
-                    if self.settings.os == "Windows":  # Cross building to Linux
-                        tools.replace_in_file("../configure", 'LDSHAREDLIBC="${LDSHAREDLIBC--lc}"', 'LDSHAREDLIBC=""')
-                    # Zlib configure doesnt allow this parameters
-
-                    if self.settings.os == "iOS":
-                        tools.replace_in_file("../gzguts.h", '#ifdef _LARGEFILE64_SOURCE', '#include <unistd.h>\n\n#ifdef _LARGEFILE64_SOURCE')
 
                     # configure passes CFLAGS to linker, should be LDFLAGS
                     tools.replace_in_file("../configure", "$LDSHARED $SFLAGS", "$LDSHARED $LDFLAGS")
@@ -84,34 +68,13 @@ class ZlibConan(ConanFile):
                     tools.replace_in_file("../Makefile.in", "$(CC) $(CFLAGS) -o", "$(CC) $(LDFLAGS) -o")
 
                     env_build_vars = env_build.vars
-                    if tools.is_apple_os(self.settings.os):
-                        # force macOS ranlib because ranlib from binutils produced malformed ar archives
-                        env_build_vars['RANLIB'] = tools.XCRun(self.settings).ranlib
-
-                    if self.settings.os == "Windows" and tools.os_info.is_linux:
-                        # we need to build only libraries without test example and minigzip
-                        if self.options.shared:
-                            make_target = "zlib1.dll"
-                        else:
-                            make_target = "libz.a"
-                        # Let our profile to declare what is needed.
-                        tools.replace_in_file("../win32/Makefile.gcc", 'LDFLAGS = $(LOC)', '')
-                        tools.replace_in_file("../win32/Makefile.gcc", 'AS = $(CC)', '')
-                        tools.replace_in_file("../win32/Makefile.gcc", 'AR = $(PREFIX)ar', '')
-                        tools.replace_in_file("../win32/Makefile.gcc", 'CC = $(PREFIX)gcc', '')
-                        tools.replace_in_file("../win32/Makefile.gcc", 'RC = $(PREFIX)windres', '')
-                        self.run("cd .. && make -f win32/Makefile.gcc %s" % make_target)
+                    # we need to build only libraries without test example and minigzip
+                    if self.options.shared:
+                        make_target = "libz.so.%s" % self.version
                     else:
-                        # we need to build only libraries without test example and minigzip
-                        if self.options.shared:
-                            if self.settings.os == "Macos":
-                                make_target = "libz.%s.dylib" % self.version
-                            else:
-                                make_target = "libz.so.%s" % self.version
-                        else:
-                            make_target = "libz.a"
-                        env_build.configure("../", build=False, host=False, target=False, vars=env_build_vars)
-                        env_build.make(target=make_target)
+                        make_target = "libz.a"
+                    env_build.configure("../", build=False, host=False, target=False, vars=env_build_vars)
+                    env_build.make(target=make_target)
                 else:
                     cmake = CMake(self)
                     cmake.configure(build_dir=".")
