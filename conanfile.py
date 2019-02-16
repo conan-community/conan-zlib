@@ -54,7 +54,7 @@ class ZlibConan(ConanFile):
                                       '#if defined(HAVE_STDARG_H) && (1-HAVE_STDARG_H-1 != 0)')
             tools.mkdir("_build")
             with tools.chdir("_build"):
-                if self.settings.os == "Linux":
+                if self.settings.os == "Linux" or tools.is_apple_os(self.settings.os):
                     env_build = AutoToolsBuildEnvironment(self)
 
                     # https://github.com/madler/zlib/issues/268
@@ -70,7 +70,10 @@ class ZlibConan(ConanFile):
                     env_build_vars = env_build.vars
                     # we need to build only libraries without test example and minigzip
                     if self.options.shared:
-                        make_target = "libz.so.%s" % self.version
+                        if tools.is_apple_os(self.settings.os):
+                            make_target = "libz.%s.dylib" % self.version
+                        else:
+                            make_target = "libz.so.%s" % self.version
                     else:
                         make_target = "libz.a"
                     env_build.configure("../", build=False, host=False, target=False, vars=env_build_vars)
@@ -155,7 +158,7 @@ class ZlibConan(ConanFile):
                         os.rename(current_lib, os.path.join(lib_path, "libzlib.a"))
         else:
             if self.options.shared:
-                if self.settings.os == "Macos":
+                if tools.is_apple_os(self.settings.os):
                     self.copy(pattern="*.dylib", dst="lib", src=build_dir, keep_path=False, symlinks=True)
                 else:
                     self.copy(pattern="*.so*", dst="lib", src=build_dir, keep_path=False, symlinks=True)
