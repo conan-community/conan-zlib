@@ -63,7 +63,7 @@ class ZlibConan(ConanFile):
         env_build_vars = env_build.vars
         # we need to build only libraries without test example and minigzip
         suffix = "dylib" if tools.is_apple_os(self.settings.os) else "so"
-        make_target = "libz.%s.%s" % (suffix, self.version) if self.options.shared else "zlib.a"
+        make_target = "libz.%s.%s" % (suffix, self.version) if self.options.shared else "libz.a"
         env_build.configure("../", build=False, host=False, target=False, vars=env_build_vars)
         env_build.make(target=make_target)
 
