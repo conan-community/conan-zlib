@@ -141,7 +141,7 @@ class ZlibConan(ConanFile):
         if self.options.shared:
             self.copy(pattern="*.dylib*", dst="lib", src=build_dir, keep_path=False, symlinks=True)
             self.copy(pattern="*.so*", dst="lib", src=build_dir, keep_path=False, symlinks=True)
-            self.copy(pattern="*.dll", dst="lib", src=build_dir, keep_path=False)
+            self.copy(pattern="*.dll", dst="bin", src=build_dir, keep_path=False)
         else:
             self.copy(pattern="*.a", dst="lib", src=build_dir, keep_path=False)
         self.copy(pattern="*.lib", dst="lib", src=build_dir, keep_path=False)
