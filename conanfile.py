@@ -131,7 +131,8 @@ class ZlibConan(ConanFile):
         self.copy("LICENSE", src=self._source_subfolder, dst="licenses")
 
         # Copy pc file
-        self.copy("*.pc", dst="", keep_path=False)
+        self.copy("*.pc", dst="", keep_path=False)  # for compatibility only!
+        self.copy("*.pc", dst=os.path.join("lib", "pkgconfig"), keep_path=False)
 
         # Copy headers
         for header in ["*zlib.h", "*zconf.h"]:
