@@ -138,10 +138,12 @@ class ZlibConan(ConanFile):
 
         # Copying static and dynamic libs
         build_dir = os.path.join(self._source_subfolder, "_build")
-        self.copy(pattern="*.dylib*", dst="lib", src=build_dir, keep_path=False, symlinks=True)
-        self.copy(pattern="*.so*", dst="lib", src=build_dir, keep_path=False, symlinks=True)
-        self.copy(pattern="*.dll", dst="lib", src=build_dir, keep_path=False)
-        self.copy(pattern="*.a", dst="lib", src=build_dir, keep_path=False)
+        if self.options.shared:
+            self.copy(pattern="*.dylib*", dst="lib", src=build_dir, keep_path=False, symlinks=True)
+            self.copy(pattern="*.so*", dst="lib", src=build_dir, keep_path=False, symlinks=True)
+            self.copy(pattern="*.dll", dst="lib", src=build_dir, keep_path=False)
+        else:
+            self.copy(pattern="*.a", dst="lib", src=build_dir, keep_path=False)
         self.copy(pattern="*.lib", dst="lib", src=build_dir, keep_path=False)
 
         self._rename_libraries()
