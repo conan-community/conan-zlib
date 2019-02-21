@@ -60,13 +60,12 @@ class ZlibConan(ConanFile):
         # same thing in Makefile.in, when building tests/example executables
         tools.replace_in_file("../Makefile.in", "$(CC) $(CFLAGS) -o", "$(CC) $(LDFLAGS) -o")
 
-        env_build_vars = env_build.vars
         # we need to build only libraries without test example and minigzip
         if self.options.shared:
             make_target = "libz.%s.dylib" % self.version if tools.is_apple_os(self.settings.os) else "libz.so.%s" % self.version
         else:
             make_target = "libz.a"
-        env_build.configure("../", build=False, host=False, target=False, vars=env_build_vars)
+        env_build.configure("../", build=False, host=False, target=False)
         env_build.make(target=make_target)
 
     def _build_zlib_cmake(self):
@@ -119,8 +118,6 @@ class ZlibConan(ConanFile):
                     os.rename(current_lib, os.path.join(lib_path, "libzlib.a"))
 
     def package(self):
-        self.output.warn("local cache: %s" % self.in_local_cache)
-        self.output.warn("develop: %s" % self.develop)
         # Extract the License/s from the header to a file
         with tools.chdir(os.path.join(self.source_folder, self._source_subfolder)):
             tmp = tools.load("zlib.h")
