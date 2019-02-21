@@ -45,7 +45,7 @@ class ZlibConan(ConanFile):
 
     @property
     def _use_autotools(self):
-        return self.settings.os == "Linux" or tools.is_apple_os(self.settings.os)
+        return self.settings.os == "Linux"
 
     def _build_zlib_autotools(self):
         env_build = AutoToolsBuildEnvironment(self)
