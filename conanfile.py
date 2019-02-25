@@ -50,11 +50,6 @@ class ZlibConan(ConanFile):
     def _build_zlib_autotools(self):
         env_build = AutoToolsBuildEnvironment(self)
 
-        # https://github.com/madler/zlib/issues/268
-        tools.replace_in_file('../gzguts.h',
-                              '#if defined(_WIN32) || defined(__CYGWIN__)',
-                              '#if defined(_WIN32) || defined(__MINGW32__)')
-
         # configure passes CFLAGS to linker, should be LDFLAGS
         tools.replace_in_file("../configure", "$LDSHARED $SFLAGS", "$LDSHARED $LDFLAGS")
         # same thing in Makefile.in, when building tests/example executables
@@ -77,6 +72,12 @@ class ZlibConan(ConanFile):
 
     def _build_zlib(self):
         with tools.chdir(self._source_subfolder):
+            # https://github.com/madler/zlib/issues/268
+            tools.replace_in_file('gzguts.h',
+                                  '#if defined(_WIN32) || defined(__CYGWIN__)',
+                                  '#if defined(_WIN32) || defined(__MINGW32__)')
+            if self.settings.os == "iOS":
+                tools.replace_in_file("gzguts.h", '#ifdef _LARGEFILE64_SOURCE', '#include <unistd.h>\n\n#ifdef _LARGEFILE64_SOURCE')
             for filename in ['zconf.h', 'zconf.h.cmakein', 'zconf.h.in']:
                 tools.replace_in_file(filename,
                                       '#ifdef HAVE_UNISTD_H    /* may be set to #if 1 by ./configure */',
