@@ -3,6 +3,7 @@
 import os
 import stat
 from conans import ConanFile, tools, CMake, AutoToolsBuildEnvironment
+from conans.errors import ConanException
 
 
 class ZlibConan(ConanFile):
@@ -30,7 +31,13 @@ class ZlibConan(ConanFile):
         del self.settings.compiler.libcxx
 
     def source(self):
-        tools.get("{}/{}-{}.tar.gz".format(self.homepage, self.name, self.version))
+        sha256 = "c3e5e9fdd5004dcb542feda5ee4f0ff0744628baf8ed2dd5d66f8ca1197cb1a1"
+        try:
+            tools.get("{}/{}-{}.tar.gz".format(self.homepage, self.name, self.version),
+                      sha256=sha256)
+        except ConanException:
+            mirror = "https://downloads.sourceforge.net/project/libpng/zlib/{version}/zlib-{version}.tar.gz"
+            tools.get(mirror.format(version=self.version), sha256=sha256)
         os.rename("{}-{}".format(self.name, self.version), self._source_subfolder)
         if not tools.os_info.is_windows:
             configure_file = os.path.join(self._source_subfolder, "configure")
