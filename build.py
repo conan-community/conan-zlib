@@ -4,8 +4,12 @@ import os
 from cpt.packager import ConanMultiPackager
 
 
+def is_hook_job():
+    return os.getenv("CONAN_GCC_VERSIONS", "") != "4.8"
+
+
 def docker_entry_script():
-    if os.getenv("CONAN_CLANG_VERSIONS", "") != "7.0":
+    if not is_hook_job():
         return None
 
     return " ".join(["conan config install http://github.com/conan-io/hooks.git -sf hooks -tf hooks &&",
@@ -18,7 +22,7 @@ def docker_entry_script():
                      "conan config set hooks.spdx_checker"])
 
 def pip_extra_packages():
-    if os.getenv("CONAN_CLANG_VERSIONS", "") != "7.0":
+    if not is_hook_job():
         return None
     return ["https://github.com/lief-project/packages/raw/lief-master-latest/pylief-0.9.0.dev.zip", "spdx_lookup"]
 
