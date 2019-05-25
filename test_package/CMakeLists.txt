@@ -1,13 +1,16 @@
-cmake_minimum_required(VERSION 2.8)
-PROJECT(test_package C)
+cmake_minimum_required(VERSION 3.0)
+project(test_package C)
 
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-CONAN_BASIC_SETUP()
+conan_basic_setup()
 
-add_executable(test test.c)
-target_link_libraries(test ${CONAN_LIBS})
+find_package(ZLIB REQUIRED)
+
+add_executable(test_zlib test.c)
+target_link_libraries(test_zlib ZLIB::ZLIB)
+set_target_properties(test_zlib PROPERTIES OUTPUT_NAME "test")
 
 if(WITH_MINIZIP)
   add_executable(test_minizip test_minizip.c)
-  target_link_libraries(test_minizip ${CONAN_LIBS})
+  target_link_libraries(test_minizip ZLIB::ZLIB)
 endif()
