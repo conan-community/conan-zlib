@@ -125,6 +125,23 @@ class ZlibConan(ConanFile):
                     current_lib = os.path.join(lib_path, "libzlibstatic.a")
                     os.rename(current_lib, os.path.join(lib_path, "libzlib.a"))
 
+    def _delete_crypt_header(self):
+        """
+        Delete the crypt.h which is causing trouble for linking.
+        The crypt.h defines only static methods which are to be included
+        in zip.c/unzip.c so it will work just fine by  including zip.h/unzip.h
+        and linking against libminizip
+        cf: https://bugzilla.redhat.com/show_bug.cgi?id=1424609
+        """
+        crypt_path = os.path.join(self.package_folder, "include", "crypt.h")
+        if os.path.exists(crypt_path):
+            self.output.warn("Removing crypt.h at path: "
+                             "{}".format(crypt_path))
+            os.remove(crypt_path)
+        else:
+            self.output.warn("Didn't find crypt.h at path: "
+                             "{}".format(crypt_path))
+
     def package(self):
         # Extract the License/s from the header to a file
         with tools.chdir(os.path.join(self.source_folder, self._source_subfolder)):
@@ -156,6 +173,8 @@ class ZlibConan(ConanFile):
         self.copy(pattern="*.lib", dst="lib", src=build_dir, keep_path=False)
 
         self._rename_libraries()
+
+        self._delete_crypt_header()
 
         # Provide a cmake finder
         self.copy('FindZLIB.cmake', '.', '.')
