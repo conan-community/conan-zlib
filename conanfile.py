@@ -17,8 +17,9 @@ class ZlibConan(ConanFile):
                    "(Also Free, Not to Mention Unencumbered by Patents)")
     settings = "os", "arch", "compiler", "build_type"
     options = {"shared": [True, False], "fPIC": [True, False], "minizip": [True, False]}
-    default_options = "shared=False", "fPIC=True", "minizip=False"
-    exports = ["LICENSE", "FindZLIB.cmake"]
+    default_options = {'shared': False, 'fPIC': True, 'minizip': False}
+    topics = ("conan", "zlib", "compression", "zip")
+    exports = ["LICENSE"]
     exports_sources = ["CMakeLists.txt", "CMakeLists_minizip.txt", "minizip.patch"]
     generators = "cmake"
     _source_subfolder = "source_subfolder"
@@ -156,9 +157,6 @@ class ZlibConan(ConanFile):
         self.copy(pattern="*.lib", dst="lib", src=build_dir, keep_path=False)
 
         self._rename_libraries()
-
-        # Provide a cmake finder
-        self.copy('FindZLIB.cmake', '.', '.')
 
     def package_info(self):
         if self.options.minizip:
