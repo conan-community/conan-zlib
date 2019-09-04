@@ -24,6 +24,14 @@ class ZlibConan(ConanFile):
     generators = "cmake"
     _source_subfolder = "source_subfolder"
 
+    @property
+    def _is_msvc(self):
+        return self.settings.compiler == "Visual Studio"
+
+    @property
+    def _is_clangcl(self):
+        return self.settings.compiler == "clang" and self.settings.os == "Windows"
+
     def config_options(self):
         if self.settings.os == "Windows":
             del self.options.fPIC
@@ -116,11 +124,11 @@ class ZlibConan(ConanFile):
             suffix = "d" if self.settings.build_type == "Debug" else ""
 
             if self.options.shared:
-                if self.settings.compiler == "Visual Studio":
+                if self._is_clangcl or self._is_msvc:
                     current_lib = os.path.join(lib_path, "zlib%s.lib" % suffix)
                     os.rename(current_lib, os.path.join(lib_path, "zlib.lib"))
             else:
-                if self.settings.compiler == "Visual Studio":
+                if self._is_clangcl or self._is_msvc:
                     current_lib = os.path.join(lib_path, "zlibstatic%s.lib" % suffix)
                     os.rename(current_lib, os.path.join(lib_path, "zlib.lib"))
                 elif self.settings.compiler == "gcc":
